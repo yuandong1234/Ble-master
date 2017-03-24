@@ -49,15 +49,16 @@ public class BleManager {
     public static final int DEFAULT_SCAN_TIME = 20000;//最大扫描时间
     public static final int DEFAULT_CONN_TIME = 10000;//最大连接时间
     public static final int DEFAULT_OPERATE_TIME = 500;//最大操作时间（读、写、订阅 ）
+    public static final int RECONNECT_MAX_TIME = 3;//重连最大次数
 
+    //message.what
     private static final int MSG_WRITE_CHA = 1;
     private static final int MSG_WRITE_DES = 2;
     private static final int MSG_READ_CHA = 3;
     private static final int MSG_READ_DES = 4;
-    private static final int MSG_READ_RSSI = 5;
+    private static final int MSG_SCAN_TIMEOUT = 5;
     private static final int MSG_CONNECT_TIMEOUT = 6;
 
-    private static final int RECONNECT_MAX_TIME = 3;//重连最大次数
 
     private Context context;
     private BluetoothManager bluetoothManager;
@@ -70,10 +71,10 @@ public class BleManager {
     private BluetoothGattDescriptor descriptor;
     private State state = State.DISCONNECT;
     private int scanTimeout = DEFAULT_SCAN_TIME;
-    private int connectTimeout = DEFAULT_CONN_TIME;
-    private int operateTimeout = DEFAULT_OPERATE_TIME;
-    private int connectTimes;//重连次数
-    private BleDevice bleDevice;
+    private int connectTimeout = DEFAULT_CONN_TIME;//连接超时时间
+    private int operateTimeout = DEFAULT_OPERATE_TIME;//操作超时时间（比如读、写）
+    private int reConnectTimes;//重连次数
+    private BleDevice mBleDevice;
 
     private static BleManager bleManager;
 
@@ -95,6 +96,10 @@ public class BleManager {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
+                case MSG_SCAN_TIMEOUT://扫描超时
+                    //TODO 待处理：
+                    sendBleBroadcast(BaseAction.ACTION_DEVICE_SCAN_TIMEOUT);
+                    break;
                 case MSG_CONNECT_TIMEOUT://连接超时
                     if (state != State.CONNECT_SUCCESS) {
                         state = State.CONNECT_TIMEOUT;
@@ -107,15 +112,19 @@ public class BleManager {
                     break;
                 case MSG_WRITE_CHA://写入超时
                 case MSG_WRITE_DES:
-                    if (state != State.WRITE_SUCCESS) {
+                    if (state == State.WRITE_PROCESS) {
                         state = State.WRITE_TIMEOUT;
                         sendBleBroadcast(BaseAction.ACTION_BLE_WRITE_TIME_OUT);
+                    }
+                    if(state==State.SUBSCRIBE_PROCESS){
+                      state=State.SUBSCRIBE_TIMEOUT;
+                        sendBleBroadcast(BaseAction.ACTION_BLE_CHARACTERISTIC_SUBSCRIBE_TIMEOUT);
                     }
                     break;
                 case MSG_READ_CHA://读取超时
                 case MSG_READ_DES:
-                    if(state != State.READ_SUCCESS){
-                        state=State.READ_TIMEOUT;
+                    if (state != State.READ_PROCESS) {
+                        state = State.READ_TIMEOUT;
                         sendBleBroadcast(BaseAction.ACTION_BLE_READ_TIME_OUT);
                     }
                     break;
@@ -189,14 +198,14 @@ public class BleManager {
                     bluetoothGatt = gatt;
                 }
                 state = State.CONNECT_SUCCESS;
-                connectTimes = 0;
+                reConnectTimes = 0;
                 // 发广播通知连接成功
                 sendBleBroadcast(BaseAction.ACTION_DEVICE_CONNECTED);
             } else {
                 //TODO 设备连接成功，但是status会出现“129”等情况,在这里可以进行断开重连操作
                 state = State.CONNECT_FAILURE;
                 // 发广播通知连接失败
-               // sendBleBroadcast(BaseAction.ACTION_BLE_CONNECT_FAILURE);
+                // sendBleBroadcast(BaseAction.ACTION_BLE_CONNECT_FAILURE);
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -216,11 +225,11 @@ public class BleManager {
             if (handler != null) {
                 handler.removeMessages(MSG_READ_CHA);
             }
-            if(status == BluetoothGatt.GATT_SUCCESS){
-                state=State.READ_SUCCESS;
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                state = State.READ_SUCCESS;
                 sendBleBroadcast(BaseAction.ACTION_BLE_READ_SUCCESS);
-            }else{
-                state=State.READ_FAILURE;
+            } else {
+                state = State.READ_FAILURE;
                 sendBleBroadcast(BaseAction.ACTION_BLE_READ_FAILURE);
             }
         }
@@ -232,7 +241,7 @@ public class BleManager {
             if (handler != null) {
                 handler.removeMessages(MSG_WRITE_CHA);
             }
-            if (status == BluetoothGatt.GATT_SUCCESS) {
+            if (status == BluetoothGatt.GATT_SUCCESS&&state==State.WRITE_PROCESS) {
                 state = State.WRITE_SUCCESS;
                 sendBleBroadcast(BaseAction.ACTION_BLE_WRITE_SUCCESS);
             } else {
@@ -248,11 +257,11 @@ public class BleManager {
             if (handler != null) {
                 handler.removeMessages(MSG_READ_DES);
             }
-            if(status == BluetoothGatt.GATT_SUCCESS){
-                state=State.READ_SUCCESS;
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                state = State.READ_SUCCESS;
                 sendBleBroadcast(BaseAction.ACTION_BLE_READ_SUCCESS);
-            }else{
-                state=State.READ_FAILURE;
+            } else {
+                state = State.READ_FAILURE;
                 sendBleBroadcast(BaseAction.ACTION_BLE_READ_FAILURE);
             }
         }
@@ -264,17 +273,27 @@ public class BleManager {
                 handler.removeMessages(MSG_WRITE_DES);
             }
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                state = State.WRITE_SUCCESS;
-                sendBleBroadcast(BaseAction.ACTION_BLE_WRITE_SUCCESS);
+                if (state == State.SUBSCRIBE_PROCESS) {//订阅
+                    state = State.SUBSCRIBE_SUCCESS;
+                    sendBleBroadcast(BaseAction.ACTION_BLE_CHARACTERISTIC_SUBSCRIBE_SUCCESS);
+                } else if(state==State.WRITE_PROCESS){
+                    state = State.WRITE_SUCCESS;
+                    sendBleBroadcast(BaseAction.ACTION_BLE_WRITE_SUCCESS);
+                }
             } else {
-                state = State.WRITE_FAILURE;
-                sendBleBroadcast(BaseAction.ACTION_BLE_WRITE_FAILURE);
+                if (state == State.SUBSCRIBE_PROCESS) {//订阅
+                    state = State.SUBSCRIBE_FAILURE;
+                    sendBleBroadcast(BaseAction.ACTION_BLE_CHARACTERISTIC_SUBSCRIBE_SUCCESS);
+                } else {
+                    state = State.WRITE_FAILURE;
+                    sendBleBroadcast(BaseAction.ACTION_BLE_WRITE_FAILURE);
+                }
             }
         }
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic) {
-             super.onCharacteristicChanged(gatt, characteristic);
+            super.onCharacteristicChanged(gatt, characteristic);
             BleLog.i("onCharacteristicChanged data:" + HexUtil.encodeHexStr(characteristic.getValue()));
             //TODO 待处理。。。。。。。。
             runOnMainThread(new Runnable() {
@@ -403,7 +422,7 @@ public class BleManager {
         if (bleDevice == null) {
             throw new IllegalArgumentException("this BleDevice is Null!");
         }
-        this.bleDevice = bleDevice;
+        this.mBleDevice = bleDevice;
         connect(bleDevice.getDevice(), autoConnect);
     }
 
@@ -418,6 +437,7 @@ public class BleManager {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
+                        mBleDevice = bleDevice;
                         connect(bleDevice, autoConnect);
                     }
                 });
@@ -428,8 +448,11 @@ public class BleManager {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
-                        //  发送广播连接超时
-                        sendBleBroadcast(BaseAction.ACTION_BLE_CONNECT_TIME_OUT);
+                        //  发消息 扫描设备超时
+                        BleLog.e("scan  timeout so that the ble scan timeout");
+                        // sendBleBroadcast(BaseAction.ACTION_DEVICE_SCAN_TIMEOUT);
+                        Message msg = handler.obtainMessage(MSG_SCAN_TIMEOUT);
+                        handler.sendMessage(msg);
                     }
                 });
             }
@@ -447,6 +470,7 @@ public class BleManager {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
+                        mBleDevice = bluetoothLeDevice;
                         connect(bluetoothLeDevice, autoConnect);
                     }
                 });
@@ -457,10 +481,11 @@ public class BleManager {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
-                        //  发送广播连接超时
-                        sendBleBroadcast(BaseAction.ACTION_BLE_CONNECT_TIME_OUT);
-
-
+                        //  发消息扫描设备超时
+                        BleLog.e("scan  timeout so that the ble scan timeout");
+                        //sendBleBroadcast(BaseAction.ACTION_DEVICE_SCAN_TIMEOUT);
+                        Message msg = handler.obtainMessage(MSG_SCAN_TIMEOUT);
+                        handler.sendMessage(msg);
                     }
                 });
             }
@@ -480,6 +505,7 @@ public class BleManager {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
+                        mBleDevice = bluetoothLeDevice;
                         connect(bluetoothLeDevice, autoConnect);
                     }
                 });
@@ -490,10 +516,11 @@ public class BleManager {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
-                        //  发送广播连接超时
-                        sendBleBroadcast(BaseAction.ACTION_BLE_CONNECT_TIME_OUT);
-
-
+                        //  发消息 扫描设备超时
+                        BleLog.e("scan  timeout so that the ble scan timeout");
+                        // sendBleBroadcast(BaseAction.ACTION_DEVICE_SCAN_TIMEOUT);
+                        Message msg = handler.obtainMessage(MSG_SCAN_TIMEOUT);
+                        handler.sendMessage(msg);
                     }
                 });
             }
@@ -513,6 +540,7 @@ public class BleManager {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
+                        mBleDevice = bluetoothLeDevice;
                         connect(bluetoothLeDevice, autoConnect);
                     }
                 });
@@ -523,8 +551,11 @@ public class BleManager {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
-                        //  发送广播连接超时
-                        sendBleBroadcast(BaseAction.ACTION_BLE_CONNECT_TIME_OUT);
+                        //  发消息 扫描设备超时
+                        BleLog.e("scan  timeout so that the ble scan timeout");
+                        //sendBleBroadcast(BaseAction.ACTION_DEVICE_SCAN_TIMEOUT);
+                        Message msg = handler.obtainMessage(MSG_SCAN_TIMEOUT);
+                        handler.sendMessage(msg);
                     }
                 });
             }
@@ -556,23 +587,25 @@ public class BleManager {
                 readCharacteristic = service.getCharacteristic(readCharacteristicUUID);
                 writeCharacteristic = service.getCharacteristic(writeCharacteristicUUID);
                 heartCharacteristic = service.getCharacteristic(heartCharacteristicUUID);
-            }else{
+            } else {
                 BleLog.e("not discover the named service ");
+                //断开重连
+                reConnect();
+                return this;
             }
-            if(readCharacteristic!=null&&writeCharacteristic!=null&&heartCharacteristic!=null){
+            if (readCharacteristic != null && writeCharacteristic != null && heartCharacteristic != null) {
                 //找到指定Characteristic,发通知订阅
                 BleLog.e("discover the named Characteristic ");
                 sendBleBroadcast(BaseAction.ACTION_BLE_SERVICE_DISCOVER_SUCCESS);
-            }else{
-               //找不到指定Characteristic ，发通知重连
+            } else {
+                //找不到指定Characteristic ，发通知重连
                 BleLog.e(" not discover the named Characteristic ");
                 reConnect();
                 sendBleBroadcast(BaseAction.ACTION_BLE_SERVICE_DISCOVER_FAILURE);
             }
-
-        }else{
-           BleLog.e("serviceUUID is "+serviceUUID +" or  bluetoothGatt is "+bluetoothGatt);
-            //TODO 重新连接
+        } else {
+            BleLog.e("serviceUUID is " + serviceUUID + " or  bluetoothGatt is " + bluetoothGatt);
+            //重新连接
             reConnect();
         }
         return this;
@@ -585,31 +618,29 @@ public class BleManager {
             return setCharacteristicNotification(bluetoothGatt, characteristic, true);
         } else {
             //Characteristic不可读
-            BleLog.e(" notify Characteristic  不可“读”!  or characteristic = "+characteristic);
+            BleLog.e(" notify Characteristic  不可“读”!  or characteristic = " + characteristic);
             return false;
         }
     }
 
     //取消订阅
-    public boolean disableCharacteristicNotification(BluetoothGattCharacteristic characteristic,
-                                                     final BleCallBack<BluetoothGattCharacteristic> bleCallback) {
+    public boolean disableCharacteristicNotification(BluetoothGattCharacteristic characteristic) {
         if (characteristic != null && (characteristic.getProperties() | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
             return setCharacteristicNotification(bluetoothGatt, characteristic, false);
         } else {
-            BleLog.e(" notify Characteristic  不可“读”  or characteristic = "+characteristic);
+            BleLog.e(" notify Characteristic  不可“读”  or characteristic = " + characteristic);
             return false;
         }
     }
 
 
-    public boolean setCharacteristicNotification(BluetoothGatt gatt,
-                                                 BluetoothGattCharacteristic characteristic,
-                                                 boolean enable) {
+    public boolean setCharacteristicNotification(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, boolean enable) {
         if (gatt != null && characteristic != null) {
             if ((characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_NOTIFY) == 0) {
                 BleLog.e("check characteristic property :false");
                 return false;
             }
+            state = State.SUBSCRIBE_PROCESS;
             boolean success = gatt.setCharacteristicNotification(characteristic, enable);
             if (success) {
                 BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID.fromString(BleConstant.CLIENT_CHARACTERISTIC_CONFIG));
@@ -621,14 +652,25 @@ public class BleManager {
                         BleLog.e("characteristic  取消订阅成功...");
                         descriptor.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
                     }
-                    gatt.writeDescriptor(descriptor);
+
+                    listenAndTimer(MSG_WRITE_DES);
+                    boolean isSuccess = gatt.writeDescriptor(descriptor);
+                    if (!isSuccess) {//写入不成功，
+                        state = State.SUBSCRIBE_FAILURE;
+                        handleAfterInitialed(isSuccess, BaseAction.ACTION_BLE_CHARACTERISTIC_SUBSCRIBE_FAILURE);
+                    }
                 }
+            } else {
+                //发送广播，订阅失败
+                state = State.SUBSCRIBE_FAILURE;
+                sendBleBroadcast(BaseAction.ACTION_BLE_CHARACTERISTIC_SUBSCRIBE_FAILURE);
             }
             BleLog.i("Characteristic set notification is " + success);
             return success;
-        }else{
+        } else {
             BleLog.e("BluetoothGatt is null or notify characteristic is null");
             sendBleBroadcast(BaseAction.ACTION_BLE_ERROR);
+            reConnect();
         }
         return false;
     }
@@ -637,7 +679,7 @@ public class BleManager {
         if (characteristic != null && (characteristic.getProperties() | BluetoothGattCharacteristic.PROPERTY_INDICATE) > 0) {
             return setCharacteristicIndication(bluetoothGatt, characteristic, true);
         } else {
-            BleLog.e(" indicate Characteristic  不可“读”! or characteristic = "+characteristic);
+            BleLog.e(" indicate Characteristic  不可“读”! or characteristic = " + characteristic);
             return false;
         }
     }
@@ -646,7 +688,7 @@ public class BleManager {
         if (characteristic != null && (characteristic.getProperties() | BluetoothGattCharacteristic.PROPERTY_INDICATE) > 0) {
             return setCharacteristicIndication(bluetoothGatt, characteristic, false);
         } else {
-            BleLog.e(" indicate Characteristic  不可“读” or characteristic = "+characteristic);
+            BleLog.e(" indicate Characteristic  不可“读” or characteristic = " + characteristic);
             return false;
         }
     }
@@ -674,7 +716,7 @@ public class BleManager {
             }
             BleLog.i("Characteristic set notification is Success!");
             return success;
-        }else{
+        } else {
             BleLog.e("BluetoothGatt is null or indicate characteristic is null");
             sendBleBroadcast(BaseAction.ACTION_BLE_ERROR);
         }
@@ -696,7 +738,7 @@ public class BleManager {
                 descriptor.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
             }
             return gatt.writeDescriptor(descriptor);
-        }else {
+        } else {
             BleLog.e("BluetoothGatt is null or notify descriptor is null");
             sendBleBroadcast(BaseAction.ACTION_BLE_ERROR);
         }
@@ -714,20 +756,20 @@ public class BleManager {
             sendBleBroadcast(BaseAction.ACTION_BLE_ERROR);
             return false;
         }
-        if(checkBluetoothGatt()){
+        if (checkBluetoothGatt()) {
             state = State.WRITE_PROCESS;
             BleLog.e(characteristic.getUuid() + " characteristic write bytes: "
                     + Arrays.toString(data) + " ,hex: " + HexUtil.encodeHexStr(data));
             listenAndTimer(MSG_WRITE_CHA);
             characteristic.setValue(data);
-            boolean  isSuccess = bluetoothGatt.writeCharacteristic(characteristic);
-            if(!isSuccess){//写入失败
+            boolean isSuccess = bluetoothGatt.writeCharacteristic(characteristic);
+            if (!isSuccess) {//写入失败
                 state = State.WRITE_FAILURE;
             }
             BleLog.e("写入 characteristic ：" + isSuccess);
             return handleAfterInitialed(isSuccess, BaseAction.ACTION_BLE_WRITE_FAILURE);
-        }else{
-            state = State.WRITE_FAILURE;
+        } else {
+            //state = State.WRITE_FAILURE;
             //TODO 重新连接
             reConnect();
             return false;
@@ -758,23 +800,25 @@ public class BleManager {
             sendBleBroadcast(BaseAction.ACTION_BLE_ERROR);
             return false;
         }
-        state=State.WRITE_PROCESS;
-        BleLog.e(descriptor.getUuid() + " descriptor write bytes: "
-                + Arrays.toString(data) + " ,hex: " + HexUtil.encodeHexStr(data));
-        listenAndTimer(MSG_WRITE_DES);
-        descriptor.setValue(data);
-        boolean isSuccess;
-        if(checkBluetoothGatt()){
-             isSuccess = bluetoothGatt.writeDescriptor(descriptor);
+
+        if (checkBluetoothGatt()) {
+            state = State.WRITE_PROCESS;
+            BleLog.e(descriptor.getUuid() + " descriptor write bytes: "
+                    + Arrays.toString(data) + " ,hex: " + HexUtil.encodeHexStr(data));
+            listenAndTimer(MSG_WRITE_DES);
+            descriptor.setValue(data);
+            boolean isSuccess = bluetoothGatt.writeDescriptor(descriptor);
             if (!isSuccess) {//写入失败
                 state = State.WRITE_FAILURE;
             }
-        }else{
-            state = State.WRITE_FAILURE;
+            return handleAfterInitialed(isSuccess, BaseAction.ACTION_BLE_WRITE_FAILURE);
+        } else {
+            //state = State.WRITE_FAILURE;
+            reConnect();
             return false;
         }
-        return handleAfterInitialed(isSuccess, BaseAction.ACTION_BLE_WRITE_FAILURE);
     }
+
        /*========================================read===================================*/
 
     public boolean readCharacteristic() {
@@ -783,16 +827,16 @@ public class BleManager {
 
     public boolean readCharacteristic(BluetoothGattCharacteristic characteristic) {
         if (characteristic != null && (characteristic.getProperties() | BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
-            state=State.READ_PROCESS;
+            state = State.READ_PROCESS;
             setCharacteristicNotification(getBluetoothGatt(), characteristic, false);
             listenAndTimer(MSG_READ_CHA);
             boolean isSuccess;
-            if(checkBluetoothGatt()){
+            if (checkBluetoothGatt()) {
                 isSuccess = getBluetoothGatt().readCharacteristic(characteristic);
                 if (!isSuccess) {//读取失败
-                    state=State.READ_FAILURE;
+                    state = State.READ_FAILURE;
                 }
-            }else{
+            } else {
                 state = State.READ_FAILURE;
                 return false;
             }
@@ -809,19 +853,19 @@ public class BleManager {
     }
 
     public boolean readDescriptor(BluetoothGattDescriptor descriptor) {
-        if(descriptor==null){
+        if (descriptor == null) {
             BleLog.e("descriptor is null");
-            return  false;
+            return false;
         }
-        state=State.READ_PROCESS;
-        listenAndTimer( MSG_READ_DES);
+        state = State.READ_PROCESS;
+        listenAndTimer(MSG_READ_DES);
         boolean isSuccess;
-        if(checkBluetoothGatt()){
-            isSuccess=getBluetoothGatt().readDescriptor(descriptor);
-            if(!isSuccess){
-                state=State.READ_FAILURE;
+        if (checkBluetoothGatt()) {
+            isSuccess = getBluetoothGatt().readDescriptor(descriptor);
+            if (!isSuccess) {
+                state = State.READ_FAILURE;
             }
-        }else{
+        } else {
             state = State.READ_FAILURE;
             return false;
         }
@@ -831,28 +875,44 @@ public class BleManager {
 
     /*=======================================other===========================================*/
     //重新连接
-    public synchronized  void reConnect(){
-        if(BleUtil.isBleEnable(context)&&connectTimes<DEFAULT_CONN_TIME){
+    public synchronized void reConnect() {
+        if (BleUtil.isBleEnable(context) && reConnectTimes < RECONNECT_MAX_TIME) {
             clear();
-            connectTimes++;
-            BleLog.e("连接失败，重新连接"+connectTimes+"次 ");
-            connect(bleDevice,false);
-        }else{
+            reConnectTimes++;
+            BleLog.e("连接失败，重新连接" + reConnectTimes + "次 ");
+            connect(mBleDevice, false);
+        } else {
             clear();
             sendBleBroadcast(BaseAction.ACTION_BLE_CONNECT_FAILURE);
-            BleLog.e("连接次数超过"+DEFAULT_CONN_TIME+"次 ，连接失败");
+            BleLog.e("连接次数超过" + RECONNECT_MAX_TIME + "次 ，连接失败");
         }
     }
+
+    //根据设备mac进行重新连接
+    public synchronized void reConnect(String address, boolean auto) {
+        if (BleUtil.isBleEnable(context) && reConnectTimes < RECONNECT_MAX_TIME) {
+            clear();
+            reConnectTimes++;
+            BleLog.e("连接失败，重新连接" + reConnectTimes + "次 ");
+            connectByName(address, auto);
+        } else {
+            clear();
+            sendBleBroadcast(BaseAction.ACTION_BLE_CONNECT_FAILURE);
+            BleLog.e("连接次数超过" + RECONNECT_MAX_TIME + "次 ，连接失败");
+        }
+
+    }
+
     //断开连接
     public synchronized void disconnect() {
-        state=State.DISCONNECT;
+        state = State.DISCONNECT;
         if (bluetoothGatt != null) {
             bluetoothGatt.disconnect();
         }
     }
 
     public synchronized void close() {
-        state=State.DISCONNECT;
+        state = State.DISCONNECT;
         if (bluetoothGatt != null) {
             refreshDeviceCache();
             bluetoothGatt.close();
@@ -927,10 +987,10 @@ public class BleManager {
     }
 
     //蓝牙不稳定，每次用到BluetoothGatt就要判断
-    private boolean checkBluetoothGatt(){
-        if(bluetoothGatt!=null){
+    private boolean checkBluetoothGatt() {
+        if (bluetoothGatt != null) {
             return true;
-        }else{
+        } else {
             BleLog.e(" bluetoothGatt  is null");
             //发送广播，蓝牙异常
             sendBleBroadcast(BaseAction.ACTION_BLE_ERROR);

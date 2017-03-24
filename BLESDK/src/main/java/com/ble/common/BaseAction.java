@@ -14,6 +14,10 @@ public class BaseAction {
      */
     public final static String RECEIVE_BROADCAST_PERMISSION = Manifest.permission.BLUETOOTH;
     /**
+     * 广播action 扫描设备超时
+     */
+    public final static String ACTION_DEVICE_SCAN_TIMEOUT = "com.ble.action_device_scan_timeout";
+    /**
      * 广播action 设备正在连接
      */
     public final static String ACTION_DEVICE_CONNECTING = "com.ble.action_device_connecting";
@@ -28,7 +32,7 @@ public class BaseAction {
     /**
      * 广播action 设备连接超时
      */
-    public  final static String ACTION_BLE_CONNECT_TIME_OUT = "com.ble.action_ble_connect_time_out";
+    public final static String ACTION_BLE_CONNECT_TIME_OUT = "com.ble.action_ble_connect_time_out";
     /**
      * 广播action 设备连接失败
      */
@@ -41,6 +45,18 @@ public class BaseAction {
      * 广播action 找不到指定的服务和特征
      */
     public final static String ACTION_BLE_SERVICE_DISCOVER_FAILURE = "com.ble.action_ble_discover_failure";
+    /**
+     * 广播action 订阅成功
+     */
+    public final static String ACTION_BLE_CHARACTERISTIC_SUBSCRIBE_SUCCESS = "com.ble.action_ble_characteristic_subscribe_success";
+    /**
+     * 广播action 订阅失败
+     */
+    public final static String ACTION_BLE_CHARACTERISTIC_SUBSCRIBE_FAILURE = "com.ble.action_ble_characteristic_subscribe_failure";
+    /**
+     * 广播action 订阅超时
+     */
+    public final static String ACTION_BLE_CHARACTERISTIC_SUBSCRIBE_TIMEOUT = "com.ble.action_ble_characteristic_subscribe_time_out";
     /**
      * 广播action 蓝牙发生错误
      */
