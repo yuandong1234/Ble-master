@@ -112,14 +112,18 @@ public class BleManager {
                     break;
                 case MSG_WRITE_CHA://写入超时
                 case MSG_WRITE_DES:
-                    if (state != State.WRITE_SUCCESS) {
+                    if (state == State.WRITE_PROCESS) {
                         state = State.WRITE_TIMEOUT;
                         sendBleBroadcast(BaseAction.ACTION_BLE_WRITE_TIME_OUT);
+                    }
+                    if(state==State.SUBSCRIBE_PROCESS){
+                      state=State.SUBSCRIBE_TIMEOUT;
+                        sendBleBroadcast(BaseAction.ACTION_BLE_CHARACTERISTIC_SUBSCRIBE_TIMEOUT);
                     }
                     break;
                 case MSG_READ_CHA://读取超时
                 case MSG_READ_DES:
-                    if (state != State.READ_SUCCESS) {
+                    if (state != State.READ_PROCESS) {
                         state = State.READ_TIMEOUT;
                         sendBleBroadcast(BaseAction.ACTION_BLE_READ_TIME_OUT);
                     }
@@ -237,7 +241,7 @@ public class BleManager {
             if (handler != null) {
                 handler.removeMessages(MSG_WRITE_CHA);
             }
-            if (status == BluetoothGatt.GATT_SUCCESS) {
+            if (status == BluetoothGatt.GATT_SUCCESS&&state==State.WRITE_PROCESS) {
                 state = State.WRITE_SUCCESS;
                 sendBleBroadcast(BaseAction.ACTION_BLE_WRITE_SUCCESS);
             } else {
@@ -272,7 +276,7 @@ public class BleManager {
                 if (state == State.SUBSCRIBE_PROCESS) {//订阅
                     state = State.SUBSCRIBE_SUCCESS;
                     sendBleBroadcast(BaseAction.ACTION_BLE_CHARACTERISTIC_SUBSCRIBE_SUCCESS);
-                } else {
+                } else if(state==State.WRITE_PROCESS){
                     state = State.WRITE_SUCCESS;
                     sendBleBroadcast(BaseAction.ACTION_BLE_WRITE_SUCCESS);
                 }

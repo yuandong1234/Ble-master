@@ -54,6 +54,10 @@ public class BaseAction {
      */
     public final static String ACTION_BLE_CHARACTERISTIC_SUBSCRIBE_FAILURE = "com.ble.action_ble_characteristic_subscribe_failure";
     /**
+     * 广播action 订阅超时
+     */
+    public final static String ACTION_BLE_CHARACTERISTIC_SUBSCRIBE_TIMEOUT = "com.ble.action_ble_characteristic_subscribe_time_out";
+    /**
      * 广播action 蓝牙发生错误
      */
     public static String ACTION_BLE_ERROR = "com.ble.action_ble_error";
