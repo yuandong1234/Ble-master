@@ -12,12 +12,13 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity android:name=".DeviceDetailActivity" />
-        <activity android:name=".DeviceControlActivity" />
-        <activity android:name=".OperateActivity"></activity>
+        <activity android:name=".OperateActivity" />
+        <activity android:name=".SendCommandActivity"></activity>
     </application>
 
 </manifest>

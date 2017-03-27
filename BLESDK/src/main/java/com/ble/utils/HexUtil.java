@@ -150,4 +150,26 @@ public class HexUtil {
         return digit;
     }
 
+    /**
+     * int转byte[]
+     *
+     * @param s
+     * @param asc
+     *            true:顺序 false:倒序
+     * @return
+     */
+    public final static byte[] getBytes(int s, boolean asc) {
+        byte[] buf = new byte[4];
+        if (asc)
+            for (int i = buf.length - 1; i >= 0; i--) {
+                buf[i] = (byte) (s & 0x000000ff);
+                s >>= 8;
+            }
+        else
+            for (int i = 0; i < buf.length; i++) {
+                buf[i] = (byte) (s & 0x000000ff);
+                s >>= 8;
+            }
+        return buf;
+    }
 }

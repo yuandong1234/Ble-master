@@ -23,9 +23,12 @@ import android.widget.Toast;
 
 import com.ble.BleManager;
 import com.ble.common.BaseAction;
+import com.ble.common.BleConstant;
 import com.ble.model.BleDevice;
+import com.ble.model.CommandQueue;
 import com.ble.model.GattAttributeResolver;
 import com.ble.utils.BleLog;
+import com.ble.utils.CommandUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,6 +48,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
     private BluetoothGatt gatt;
     private SimpleExpandableListAdapter simpleExpandableListAdapter;
     private List<List<BluetoothGattCharacteristic>> mGattCharacteristics = new ArrayList<>();
+    private BleManager bleManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,13 +78,13 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     protected void onResume() {
         super.onResume();
-        BleManager.getInstance().connect(mDevice, false);
+        getBleManager().connect(mDevice, false);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        BleManager.getInstance().disconnect();
+       getBleManager().disconnect();
     }
 
 
@@ -96,6 +100,9 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
         @Override
         public void onReceive(Context context, Intent intent) {
             switch (intent.getAction()) {
+                case BaseAction.ACTION_BLE_ERROR:
+                    Log.e(TAG, "ble 发生错误");
+                    break;
                 case BaseAction.ACTION_DEVICE_CONNECTING:
                     Log.e(TAG, "正在连接...");
                     break;
@@ -104,7 +111,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                     deviceAddress.setText(mDevice.getAddress());
                     connectState.setText("true");
                     gatt = BleManager.getInstance().getBluetoothGatt();
-                    simpleExpandableListAdapter=displayGattServices(gatt.getServices());
+                    simpleExpandableListAdapter = displayGattServices(gatt.getServices());
                     break;
                 case BaseAction.ACTION_DEVICE_DISCONNECTED:
                     Log.e(TAG, "连接断开");
@@ -118,6 +125,28 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                     Log.e(TAG, "连接失败");
                     connectState.setText("false");
                     break;
+                case BaseAction.ACTION_BLE_SERVICE_DISCOVER_SUCCESS:
+                    Log.e(TAG, "发现指定服务成功");
+                    //发现服务后 添加订阅
+                    getBleManager().enableCharacteristicNotification(getBleManager().getReadCharacteristic());
+                    break;
+                case BaseAction.ACTION_BLE_SERVICE_DISCOVER_FAILURE:
+                    Log.e(TAG, "发现指定服务失败");
+                    break;
+                case BaseAction.ACTION_BLE_CHARACTERISTIC_SUBSCRIBE_SUCCESS:
+                    Log.e(TAG, "订阅成功");
+                    //添加订阅成功后
+                    CommandUtil.getInstance().addCommand(CommandQueue.QUERY_STATE);
+                    break;
+                case BaseAction.ACTION_BLE_CHARACTERISTIC_SUBSCRIBE_FAILURE:
+                    Log.e(TAG, "订阅失败");
+                    break;
+                case BaseAction.ACTION_BLE_STATE_AVAILABLE:
+                    Log.e(TAG, "ble设备正常");
+                    break;
+                case BaseAction.ACTION_BLE_STATE_UNAVAILABLE:
+                    Log.e(TAG, "ble设备异常");
+                    break;
 
 
             }
@@ -126,17 +155,17 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
-            case  R.id.red:
+        switch (view.getId()) {
+            case R.id.red:
                 showGattServices(readValue);
                 break;
-            case  R.id.write:
+            case R.id.write:
                 showGattServices(writeValue);
                 break;
-            case  R.id.heart:
+            case R.id.heart:
                 showGattServices(heartValue);
                 break;
-            case  R.id.subscribe:
+            case R.id.subscribe:
                 subscribe();
                 break;
         }
@@ -146,11 +175,18 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
     private void registerBleBroadcast() {
         receiver = new BleReceiver();
         IntentFilter filter = new IntentFilter();
+        filter.addAction(BaseAction.ACTION_BLE_ERROR);
         filter.addAction(BaseAction.ACTION_DEVICE_CONNECTING);
         filter.addAction(BaseAction.ACTION_DEVICE_DISCONNECTED);
         filter.addAction(BaseAction.ACTION_DEVICE_CONNECTED);
         filter.addAction(BaseAction.ACTION_BLE_CONNECT_TIME_OUT);
         filter.addAction(BaseAction.ACTION_BLE_CONNECT_FAILURE);
+        filter.addAction(BaseAction.ACTION_BLE_SERVICE_DISCOVER_SUCCESS);
+        filter.addAction(BaseAction.ACTION_BLE_SERVICE_DISCOVER_FAILURE);
+        filter.addAction(BaseAction.ACTION_BLE_CHARACTERISTIC_SUBSCRIBE_SUCCESS);
+        filter.addAction(BaseAction.ACTION_BLE_CHARACTERISTIC_SUBSCRIBE_FAILURE);
+        filter.addAction(BaseAction.ACTION_BLE_STATE_AVAILABLE);
+        filter.addAction(BaseAction.ACTION_BLE_STATE_UNAVAILABLE);
         registerReceiver(receiver, filter);
     }
 
@@ -225,20 +261,31 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
         });
     }
 
-    //订阅
-    private void subscribe(){
-        if(TextUtils.isEmpty(readValue.getText().toString().trim())){
-            Toast.makeText(this,"读服务不能为空",Toast.LENGTH_SHORT).show();
+    //添加服务和属性
+    private void subscribe() {
+        if (TextUtils.isEmpty(readValue.getText().toString().trim())) {
+            Toast.makeText(this, "读服务不能为空", Toast.LENGTH_SHORT).show();
             return;
         }
-        if(TextUtils.isEmpty(writeValue.getText().toString().trim())){
-            Toast.makeText(this,"写服务不能为空",Toast.LENGTH_SHORT).show();
+        if (TextUtils.isEmpty(writeValue.getText().toString().trim())) {
+            Toast.makeText(this, "写服务不能为空", Toast.LENGTH_SHORT).show();
             return;
         }
-        if(TextUtils.isEmpty(heartValue.getText().toString().trim())){
-            Toast.makeText(this,"心跳包服务不能为空",Toast.LENGTH_SHORT).show();
+        if (TextUtils.isEmpty(heartValue.getText().toString().trim())) {
+            Toast.makeText(this, "心跳包服务不能为空", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        getBleManager().withUUIDString(BleConstant.SERVICE_UUID,
+                readValue.getText().toString().trim(),
+                writeValue.getText().toString().trim(),
+                heartValue.getText().toString().trim());
+    }
+
+    private BleManager  getBleManager(){
+        if(bleManager==null){
+            bleManager= BleManager.getInstance();
+        }
+     return   bleManager;
     }
 }

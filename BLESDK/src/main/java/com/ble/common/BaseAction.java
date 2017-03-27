@@ -60,7 +60,7 @@ public class BaseAction {
     /**
      * 广播action 蓝牙发生错误
      */
-    public static String ACTION_BLE_ERROR = "com.ble.action_ble_error";
+    public final static String ACTION_BLE_ERROR = "com.ble.action_ble_error";
     /**
      * 广播action 写入超时
      */
@@ -86,4 +86,13 @@ public class BaseAction {
      * 广播action 读取成功
      */
     public final static String ACTION_BLE_READ_SUCCESS = "com.ble.action_ble_read_success";
+    /**
+     * 广播action 设备状态可使用（正常）
+     */
+    public final static String ACTION_BLE_STATE_AVAILABLE = "com.ble.action_ble_state_available";
+
+    /**
+     * 广播action 设备状态不可使用（异常）
+     */
+    public final static String ACTION_BLE_STATE_UNAVAILABLE = "com.ble.action_ble_state_unavailable";
 }
