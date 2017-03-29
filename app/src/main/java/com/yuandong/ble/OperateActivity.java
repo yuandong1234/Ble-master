@@ -32,6 +32,7 @@ import com.ble.utils.CommandUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -41,8 +42,8 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
     private static final String LIST_UUID = "UUID";
     private TextView deviceAddress;
     private TextView connectState;
-    private Button read, write, heart, subscribe;
-    private TextView readValue, writeValue, heartValue;
+    private Button read, write, heart, subscribe, syncData;
+    private TextView readValue, writeValue, heartValue, stateValue, blankValue;
     private BleDevice mDevice;
     private BleReceiver receiver;
     private BluetoothGatt gatt;
@@ -66,13 +67,17 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
         write = (Button) findViewById(R.id.write);
         heart = (Button) findViewById(R.id.heart);
         subscribe = (Button) findViewById(R.id.subscribe);
+        syncData = (Button) findViewById(R.id.syncData);
         readValue = (TextView) findViewById(R.id.redValue);
         writeValue = (TextView) findViewById(R.id.writeValue);
         heartValue = (TextView) findViewById(R.id.heartValue);
+        stateValue = (TextView) findViewById(R.id.stateValue);
+        blankValue = (TextView) findViewById(R.id.blankValue);
         read.setOnClickListener(this);
         write.setOnClickListener(this);
         heart.setOnClickListener(this);
         subscribe.setOnClickListener(this);
+        syncData.setOnClickListener(this);
     }
 
     @Override
@@ -84,14 +89,13 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     protected void onStop() {
         super.onStop();
-       getBleManager().disconnect();
+        BleManager.getInstance().clear();
     }
 
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        BleManager.getInstance().clear();
         unregisterReceiver(receiver);
     }
 
@@ -111,7 +115,9 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                     deviceAddress.setText(mDevice.getAddress());
                     connectState.setText("true");
                     gatt = BleManager.getInstance().getBluetoothGatt();
-                    simpleExpandableListAdapter = displayGattServices(gatt.getServices());
+                    if (gatt != null) {
+                        simpleExpandableListAdapter = displayGattServices(gatt.getServices());
+                    }
                     break;
                 case BaseAction.ACTION_DEVICE_DISCONNECTED:
                     Log.e(TAG, "连接断开");
@@ -136,19 +142,36 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                 case BaseAction.ACTION_BLE_CHARACTERISTIC_SUBSCRIBE_SUCCESS:
                     Log.e(TAG, "订阅成功");
                     //添加订阅成功后
-                    CommandUtil.getInstance().addCommand(CommandQueue.QUERY_STATE);
+                    subscribe.setText("订阅成功");
+                    LinkedList<String> commandList = new LinkedList<>();
+                    commandList.add(CommandQueue.QUERY_STATE);
+                    commandList.add(CommandQueue.SET_SEND_BLANK);
+                    // CommandUtil.getInstance().addCommand(CommandQueue.QUERY_STATE);
+                    CommandUtil.getInstance().addCommandList(commandList);
                     break;
                 case BaseAction.ACTION_BLE_CHARACTERISTIC_SUBSCRIBE_FAILURE:
                     Log.e(TAG, "订阅失败");
+                    subscribe.setText("订阅失败");
                     break;
                 case BaseAction.ACTION_BLE_STATE_AVAILABLE:
                     Log.e(TAG, "ble设备正常");
+                    stateValue.setText("正常");
                     break;
                 case BaseAction.ACTION_BLE_STATE_UNAVAILABLE:
                     Log.e(TAG, "ble设备异常");
+                    stateValue.setText("异常");
                     break;
-
-
+                case BaseAction.ACTION_BLE_SET_CONNECT_BLANK_SUCCESS:
+                    Log.e(TAG, "设置间隔时间成功");
+                    blankValue.setText("成功");
+                    break;
+                case BaseAction.ACTION_BLE_SET_CONNECT_BLANK_FAILURE:
+                    Log.e(TAG, "设置间隔时间失败");
+                    blankValue.setText("失败");
+                    break;
+                case BaseAction.ACTION_BLE_SEND_COMMAND_TIME_OUT:
+                    Log.e(TAG, "发送命令超时");
+                    break;
             }
         }
     }
@@ -167,6 +190,8 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                 break;
             case R.id.subscribe:
                 subscribe();
+                break;
+            case R.id.syncData:
                 break;
         }
     }
@@ -187,6 +212,9 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
         filter.addAction(BaseAction.ACTION_BLE_CHARACTERISTIC_SUBSCRIBE_FAILURE);
         filter.addAction(BaseAction.ACTION_BLE_STATE_AVAILABLE);
         filter.addAction(BaseAction.ACTION_BLE_STATE_UNAVAILABLE);
+        filter.addAction(BaseAction.ACTION_BLE_SEND_COMMAND_TIME_OUT);
+        filter.addAction(BaseAction.ACTION_BLE_SET_CONNECT_BLANK_SUCCESS);
+        filter.addAction(BaseAction.ACTION_BLE_SET_CONNECT_BLANK_FAILURE);
         registerReceiver(receiver, filter);
     }
 
@@ -282,10 +310,14 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                 heartValue.getText().toString().trim());
     }
 
-    private BleManager  getBleManager(){
-        if(bleManager==null){
-            bleManager= BleManager.getInstance();
+    private void syncData() {
+
+    }
+
+    private BleManager getBleManager() {
+        if (bleManager == null) {
+            bleManager = BleManager.getInstance();
         }
-     return   bleManager;
+        return bleManager;
     }
 }

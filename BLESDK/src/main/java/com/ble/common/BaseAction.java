@@ -87,6 +87,10 @@ public class BaseAction {
      */
     public final static String ACTION_BLE_READ_SUCCESS = "com.ble.action_ble_read_success";
     /**
+     * 广播action 发送命令请求超时（异常）
+     */
+    public final static String ACTION_BLE_SEND_COMMAND_TIME_OUT = "com.ble.action_ble_send_command_time_out";
+    /**
      * 广播action 设备状态可使用（正常）
      */
     public final static String ACTION_BLE_STATE_AVAILABLE = "com.ble.action_ble_state_available";
@@ -95,4 +99,16 @@ public class BaseAction {
      * 广播action 设备状态不可使用（异常）
      */
     public final static String ACTION_BLE_STATE_UNAVAILABLE = "com.ble.action_ble_state_unavailable";
+
+    /**
+     * 广播action 修改时间间隔时间成功
+     */
+    public final static String ACTION_BLE_SET_CONNECT_BLANK_SUCCESS = "com.ble.action_ble_set_connect_blank_success";
+
+
+    /**
+     * 广播action 修改时间间隔时间失败
+     */
+    public final static String ACTION_BLE_SET_CONNECT_BLANK_FAILURE = "com.ble.action_ble_set_connect_blank_failure";
+
 }

@@ -1,6 +1,5 @@
 package com.ble.utils;
 
-import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -18,7 +17,7 @@ public class BleDataUtil {
     private final static String TAG = BleDataUtil.class.getSimpleName();
     public static final int MSG_QUERY_BLE_STATE = 100000;
     public static final int MSG_DATA_CHECK_ERROR = 100001;
-
+    public static final int MSG_SET_CONNECT_BLANK = 100002;
 
     private static BleDataUtil bleDataUtil;
     private Handler handler;
@@ -78,7 +77,7 @@ public class BleDataUtil {
      * 处理校验错误的数据
      */
     private void handleIncorrectData() {
-        sendBleMessage(MSG_DATA_CHECK_ERROR,null);
+        sendBleMessage(MSG_DATA_CHECK_ERROR, null);
     }
 
     /**
@@ -123,31 +122,36 @@ public class BleDataUtil {
         BLeProtocol bLeProtocol = new BLeProtocol(data);
         switch (bLeProtocol.getCommand()) {
             case BleCommand.QUERY_STATE://设备状态
-                sendBleMessage(MSG_QUERY_BLE_STATE,bLeProtocol.getDatas()[0]);
+                //重置当前的校验数据的次数
+                CommandUtil.CURRENT_DATA_CHECK_ERROR_TIMES = 0;
+                sendBleMessage(MSG_QUERY_BLE_STATE, bLeProtocol.getDatas()[0]);
                 break;
             case BleCommand.CONNECT_BLANK:
-
+                //重置当前的校验数据的次数
+                CommandUtil.CURRENT_DATA_CHECK_ERROR_TIMES = 0;
+                sendBleMessage(MSG_SET_CONNECT_BLANK, bLeProtocol.getDatas()[0]);
                 break;
             case BleCommand.SPORTS:
-
+                //TODO 校验成功的情况下，先重置当前的校验数据的次数
                 break;
             case BleCommand.SLEEP:
-
+                //TODO 校验成功的情况下，先重置当前的校验数据的次数
                 break;
             case BleCommand.HEART_RATE:
-
+                //TODO 校验成功的情况下，先重置当前的校验数据的次数
                 break;
         }
     }
 
     /**
      * 发信息
+     *
      * @param what
      */
-    private void sendBleMessage(int what,Object object){
+    private void sendBleMessage(int what, Object object) {
         Message msg = handler.obtainMessage(what);
-        if(object!=null){
-            msg.obj=object;
+        if (object != null) {
+            msg.obj = object;
         }
         handler.sendMessage(msg);
     }
