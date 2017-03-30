@@ -172,4 +172,19 @@ public class HexUtil {
             }
         return buf;
     }
+
+    /**
+     * Byte转int
+     *
+     * @param bytes
+     * @return
+     */
+    public static int bytesToInt(byte[] bytes) {
+        int number = bytes[0] & 0xFF;
+        // "|="按位或赋值。
+        number |= ((bytes[1] << 8) & 0xFF00);
+
+        return number;
+    }
+
 }

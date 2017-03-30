@@ -6,6 +6,11 @@ import android.util.Log;
 
 import com.ble.common.BleCommand;
 import com.ble.model.BLeProtocol;
+import com.ble.model.HeartRate;
+import com.ble.model.Sleep;
+import com.ble.model.Sport;
+
+import java.util.ArrayList;
 
 /**
  * 数据处理类（数据校验）
@@ -15,9 +20,52 @@ import com.ble.model.BLeProtocol;
 public class BleDataUtil {
 
     private final static String TAG = BleDataUtil.class.getSimpleName();
+    /**
+     * 发信息  手环工作状态
+     */
     public static final int MSG_QUERY_BLE_STATE = 100000;
+    /**
+     * 发信息  数据检验错误
+     */
     public static final int MSG_DATA_CHECK_ERROR = 100001;
+    /**
+     * 发信息  设置蓝牙时间间隔
+     */
     public static final int MSG_SET_CONNECT_BLANK = 100002;
+    /**
+     * 发信息  手环回复数据总长度(运动、睡眠、心率)
+     */
+    public static final int MSG_RECEIVER_TOTAL_DATA_LENGTH = 100003;
+    /**
+     * 发信息  接收每一帧数据正确(运动、睡眠、心率)
+     */
+    public static final int MSG_RECEIVER_DATA_CORRECT = 100004;
+    /**
+     * 发信息  接收全部数据成功(运动、睡眠、心率)
+     */
+    public static final int MSG_RECEIVER_TOTAL_DATA_SUCCESS = 100005;
+    /**
+     * 发信息  接收全部数据成功(运动、睡眠、心率)
+     */
+    public static final int MSG_RECEIVER_TOTAL_DATA_FAILURE = 100006;
+
+
+    /**
+     * 手环回复数据总长度长度
+     */
+    private int dataLength = 0;
+    /**
+     * 记录数据条数，以便检验数据长度
+     */
+    private int dataCount = 0;
+    /**
+     * 数据传输帧编号（一直循环）
+     * 09 19 29 39 49 59 69 79 89 99 A9
+     */
+    private byte tempFrameNo = 0x00;
+    private ArrayList<Sport> sportList;
+    private ArrayList<Sleep> sleepList;
+    private ArrayList<HeartRate> heartRateList;
 
     private static BleDataUtil bleDataUtil;
     private Handler handler;
@@ -126,21 +174,198 @@ public class BleDataUtil {
                 CommandUtil.CURRENT_DATA_CHECK_ERROR_TIMES = 0;
                 sendBleMessage(MSG_QUERY_BLE_STATE, bLeProtocol.getDatas()[0]);
                 break;
-            case BleCommand.CONNECT_BLANK:
+            case BleCommand.CONNECT_BLANK://蓝牙时间间隔
                 //重置当前的校验数据的次数
                 CommandUtil.CURRENT_DATA_CHECK_ERROR_TIMES = 0;
                 sendBleMessage(MSG_SET_CONNECT_BLANK, bLeProtocol.getDatas()[0]);
                 break;
-            case BleCommand.SPORTS:
-                //TODO 校验成功的情况下，先重置当前的校验数据的次数
-                break;
-            case BleCommand.SLEEP:
-                //TODO 校验成功的情况下，先重置当前的校验数据的次数
-                break;
-            case BleCommand.HEART_RATE:
-                //TODO 校验成功的情况下，先重置当前的校验数据的次数
+            default://运动 、睡眠、心率
+                switch (bLeProtocol.getFrameNo()) {
+                    case BleCommand.RECEIVE_RESPONSE_DATA_LENGTH://手环回复数据总长度长度
+                        //重置当前的校验数据的次数
+                        CommandUtil.CURRENT_DATA_CHECK_ERROR_TIMES = 0;
+                        //创建不同类型数据集合
+                        createDataList(bLeProtocol.getCommand());
+                        //获得当前的数据总长度
+                        dataLength = HexUtil.bytesToInt(bLeProtocol.getDatas());
+
+                        tempFrameNo = 0x09;
+                        dataCount = 0;
+
+                        sendBleMessage(MSG_RECEIVER_TOTAL_DATA_LENGTH, dataLength);
+                        break;
+                    case BleCommand.RECEIVE_DATA_END://数据接收结束 ,需要校验总数
+                        //重置当前的校验数据的次数
+                        CommandUtil.CURRENT_DATA_CHECK_ERROR_TIMES = 0;
+                        if (checkDataTotalCount(bLeProtocol.getCommand())) {
+                            //接受全部数据成功
+                            switch (bLeProtocol.getCommand()) {
+                                case BleCommand.SPORTS:
+                                    sendBleMessage(MSG_RECEIVER_TOTAL_DATA_SUCCESS, sportList);
+                                    break;
+                                case BleCommand.SLEEP:
+                                    sendBleMessage(MSG_RECEIVER_TOTAL_DATA_SUCCESS, sleepList);
+                                    break;
+                                case BleCommand.HEART_RATE:
+                                    sendBleMessage(MSG_RECEIVER_TOTAL_DATA_SUCCESS, heartRateList);
+                                    break;
+                            }
+                        } else {
+                            //校验总数失败
+                            clearDataList();
+                            sendBleMessage(MSG_RECEIVER_TOTAL_DATA_FAILURE, null);
+                        }
+
+                        break;
+                    default://接受每一帧的数据
+                        if (checkFrameNumber(bLeProtocol.getFrameNo())) {
+                            //如果帧编号正确 重置当前的校验数据的次数
+                            CommandUtil.CURRENT_DATA_CHECK_ERROR_TIMES = 0;
+                            //解析、添加数据
+                            addDataList(bLeProtocol);
+                            //发消息：接受数据校验正确
+                            sendBleMessage(MSG_RECEIVER_DATA_CORRECT, null);
+                        } else {
+                            //帧编号错误
+                            //发送消息：数据校验失败
+                            handleIncorrectData();
+                        }
+                        break;
+                }
                 break;
         }
+    }
+
+
+    /**
+     * 校验数据帧编号
+     *
+     * @param frameNo 当前帧序号
+     * @return
+     */
+    private boolean checkFrameNumber(byte frameNo) {
+        boolean result = false;
+
+        if (frameNo - tempFrameNo == 0x10) {
+            BleLog.i("data check true");
+            tempFrameNo = frameNo;
+            result = true;
+        } else if (tempFrameNo == (byte) 0x79 && frameNo == (byte) 0x89) {
+            BleLog.i("data check true");
+            tempFrameNo = frameNo;
+            result = true;
+        } else if (tempFrameNo == (byte) 0xA9 && frameNo == (byte) 0x19) {
+            BleLog.i("data check true go circle");
+            tempFrameNo = frameNo;
+            result = true;
+        } else if (tempFrameNo == frameNo) {
+            // 当传输过程中出现异常，比如超时，此时手环传过来的帧序号可能与上一帧相同
+            // 而手环本身也会产生重复数据，所以手环发送过来的数据长度是不可靠的
+            // 这种情况另外处理：认为手环数据无误，给手环发送D1确保帧序号回到正确的值上。
+            BleLog.e("frame number repeat,go next");
+            dataCount--;
+            tempFrameNo = frameNo;
+            result = true;
+        }
+        return result;
+    }
+
+    /**
+     * 校验数据总数
+     *
+     * @param type 数据类型
+     * @return
+     */
+    private boolean checkDataTotalCount(byte type) {
+        boolean result = false;
+        int count = 0;
+        switch (type) {
+            case BleCommand.SPORTS:
+                count = dataCount * 14; //运动每帧14个字节数据
+                BleLog.e("运动-----集合条数--> " + dataCount + ", 数据长度--> " + dataLength / 14);
+                break;
+            case BleCommand.SLEEP:
+                count = dataCount * 10; //睡眠每帧10个字节数据
+                BleLog.e("睡眠-----集合条数--> " + dataCount + ", 数据长度--> " + dataLength / 10);
+                break;
+            case BleCommand.HEART_RATE:
+                count = dataCount * 11; //心率每帧11个字节数据
+                BleLog.e("心率-----集合条数--> " + dataCount + ", 数据长度--> " + dataLength / 11);
+                break;
+        }
+        if (count == dataLength) {
+            result = true;
+        }
+        return result;
+    }
+
+    /**
+     * 创建不同类型（运动、睡眠、心率）的数据集合
+     */
+    private void createDataList(byte type) {
+        switch (type) {
+            case BleCommand.SPORTS:
+                sportList = new ArrayList<>();
+                break;
+            case BleCommand.SLEEP:
+                sleepList = new ArrayList<>();
+                break;
+            case BleCommand.HEART_RATE:
+                heartRateList = new ArrayList<>();
+                break;
+        }
+    }
+
+    /**
+     * 解析当前的数据,添加不同类型的数据
+     */
+    private void addDataList(BLeProtocol bLeProtocol) {
+        switch (bLeProtocol.getCommand()) {
+            case BleCommand.SPORTS:
+                //解析当前的数据
+                Sport sport = DataAnalyzeHelper.analyzeSportsData(bLeProtocol.getDatas());
+                synchronized (this) {
+                    if (sportList.size() == 0 || !sportList.get(sportList.size() - 1).equals(sport)) {
+                        sportList.add(sport);
+                    } else {
+                        BleLog.e("运动数据重复***");
+                    }
+                }
+                dataCount++;
+                break;
+            case BleCommand.SLEEP:
+                Sleep sleep = DataAnalyzeHelper.analyzeSleepData(bLeProtocol.getDatas());
+                synchronized (this) {
+                    if (sleepList.size() == 0 || !sleepList.get(sleepList.size() - 1).equals(sleep)) {
+                        sleepList.add(sleep);
+                    } else {
+                        BleLog.e("睡眠数据重复***");
+                    }
+                }
+                dataCount++;
+                break;
+            case BleCommand.HEART_RATE:
+                HeartRate heartRate = DataAnalyzeHelper.analyzeHeartRateData(bLeProtocol.getDatas());
+                synchronized (this) {
+                    if (heartRateList.size() == 0 || !heartRateList.get(heartRateList.size() - 1).equals(heartRate)) {
+                        heartRateList.add(heartRate);
+                    } else {
+                        BleLog.e("心率数据重复***");
+                    }
+                }
+                dataCount++;
+                break;
+        }
+
+    }
+
+    /**
+     * 清空集合
+     */
+    public void clearDataList() {
+        sportList = null;
+        sleepList = null;
+        heartRateList = null;
     }
 
     /**

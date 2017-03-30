@@ -324,13 +324,13 @@ public class BleManager {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
-            BleLog.i("onCharacteristicChanged data:" + HexUtil.encodeHexStr(characteristic.getValue()));
-            //TODO 测试=====================================
-            if(CommandUtil.CurrentTimes.size()>0){
-                BleLog.e("从写入命令到接受到数据耗时：" + (System.currentTimeMillis() - CommandUtil.CurrentTimes.peek()));
-                CommandUtil.CurrentTimes.poll();
-            }
-            //TODO 测试=====================================
+            //BleLog.i("onCharacteristicChanged data:" + HexUtil.encodeHexStr(characteristic.getValue()));
+//            //TODO 测试=====================================
+//            if(CommandUtil.CurrentTimes.size()>0) {
+//                BleLog.e("从写入命令到接受到数据耗时：" + (System.currentTimeMillis() - CommandUtil.CurrentTimes.peek()));
+//                CommandUtil.CurrentTimes.poll();
+//            }
+//            //TODO 测试=====================================
             CommandUtil.getInstance().receiveBleData(characteristic);
         }
 
@@ -812,7 +812,6 @@ public class BleManager {
             boolean isSuccess = bluetoothGatt.writeCharacteristic(characteristic);
             if (!isSuccess) {//写入失败
                 state = State.WRITE_FAILURE;
-                //TODO  写入失败，可以进行重新写入（未做）
             }
             BleLog.e("写入 characteristic ：" + isSuccess);
             return handleAfterInitialed(isSuccess, BaseAction.ACTION_BLE_WRITE_FAILURE);
@@ -1076,7 +1075,9 @@ public class BleManager {
 
     //发送广播
     public void sendBleBroadcast(String action) {
-        context.sendBroadcast(new Intent(action), BaseAction.RECEIVE_BROADCAST_PERMISSION);
+        if(context!=null){
+            context.sendBroadcast(new Intent(action), BaseAction.RECEIVE_BROADCAST_PERMISSION);
+        }
     }
 
     //发送带有数据的广播

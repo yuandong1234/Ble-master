@@ -111,4 +111,13 @@ public class BaseAction {
      */
     public final static String ACTION_BLE_SET_CONNECT_BLANK_FAILURE = "com.ble.action_ble_set_connect_blank_failure";
 
+    /**
+     * 广播action 不同类型同步数据成功（运动、睡眠、心率）
+     */
+    public final static String ACTION_BLE_SYNC_DATA_SUCCESS = "com.ble.action_ble_sync_data_success";
+    /**
+     * 广播action 全部数据同步成功
+     */
+    public final static String ACTION_BLE_SYNC_TOTAL_DATA_SUCCESS = "com.ble.action_ble_sync_total_data_success";
+
 }

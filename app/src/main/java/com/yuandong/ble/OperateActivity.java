@@ -27,6 +27,9 @@ import com.ble.common.BleConstant;
 import com.ble.model.BleDevice;
 import com.ble.model.CommandQueue;
 import com.ble.model.GattAttributeResolver;
+import com.ble.model.HeartRate;
+import com.ble.model.Sleep;
+import com.ble.model.Sport;
 import com.ble.utils.BleLog;
 import com.ble.utils.CommandUtil;
 
@@ -50,6 +53,10 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
     private SimpleExpandableListAdapter simpleExpandableListAdapter;
     private List<List<BluetoothGattCharacteristic>> mGattCharacteristics = new ArrayList<>();
     private BleManager bleManager;
+    private ArrayList<Sport>sportList;
+    private ArrayList<Sleep>sleepList;
+    private ArrayList<HeartRate>heartRateList;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -146,6 +153,10 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                     LinkedList<String> commandList = new LinkedList<>();
                     commandList.add(CommandQueue.QUERY_STATE);
                     commandList.add(CommandQueue.SET_SEND_BLANK);
+                    commandList.add(CommandQueue.SYNC_SPORTS_DATA);
+                    commandList.add(CommandQueue.SYNC_SLEEP_DATA);
+                    commandList.add(CommandQueue.SYNC_HEART_RATE_DATA);
+
                     // CommandUtil.getInstance().addCommand(CommandQueue.QUERY_STATE);
                     CommandUtil.getInstance().addCommandList(commandList);
                     break;
@@ -154,24 +165,49 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                     subscribe.setText("订阅失败");
                     break;
                 case BaseAction.ACTION_BLE_STATE_AVAILABLE:
-                    Log.e(TAG, "ble设备正常");
+                  //  Log.e(TAG, "ble设备正常");
                     stateValue.setText("正常");
                     break;
                 case BaseAction.ACTION_BLE_STATE_UNAVAILABLE:
-                    Log.e(TAG, "ble设备异常");
+                   // Log.e(TAG, "ble设备异常");
                     stateValue.setText("异常");
                     break;
                 case BaseAction.ACTION_BLE_SET_CONNECT_BLANK_SUCCESS:
-                    Log.e(TAG, "设置间隔时间成功");
+                  //  Log.e(TAG, "设置间隔时间成功");
                     blankValue.setText("成功");
                     break;
                 case BaseAction.ACTION_BLE_SET_CONNECT_BLANK_FAILURE:
-                    Log.e(TAG, "设置间隔时间失败");
+                    //Log.e(TAG, "设置间隔时间失败");
                     blankValue.setText("失败");
                     break;
                 case BaseAction.ACTION_BLE_SEND_COMMAND_TIME_OUT:
                     Log.e(TAG, "发送命令超时");
                     break;
+                case BaseAction.ACTION_BLE_SYNC_DATA_SUCCESS:
+                    Log.e(TAG, "当前类型数据同步成功");
+                    //获得运动数据
+                    ArrayList<Sport> sports=intent.getParcelableArrayListExtra(CommandUtil.TYPE_SYNC_DATA_SPORT);
+                    if(sports!=null){
+                        sportList=sports;
+                        BleLog.e("运动数据："+sportList.toString());
+                    }
+                    //获得睡眠数据
+                    ArrayList<Sleep> sleeps=intent.getParcelableArrayListExtra(CommandUtil.TYPE_SYNC_DATA_SLEEP);
+                    if(sleeps!=null){
+                        sleepList=sleeps;
+                        BleLog.e("睡眠数据："+sleepList.toString());
+                    }
+                    //获得心率数据
+                    ArrayList<HeartRate> heartRates=intent.getParcelableArrayListExtra(CommandUtil.TYPE_SYNC_DATA_HEART_RATE);
+                    if(heartRates!=null){
+                        heartRateList=heartRates;
+                        BleLog.e("心率数据："+heartRateList.toString());
+                    }
+                    break;
+                case BaseAction.ACTION_BLE_SYNC_TOTAL_DATA_SUCCESS:
+                    Log.e(TAG, "全部同步成功");
+                    break;
+
             }
         }
     }
@@ -215,6 +251,8 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
         filter.addAction(BaseAction.ACTION_BLE_SEND_COMMAND_TIME_OUT);
         filter.addAction(BaseAction.ACTION_BLE_SET_CONNECT_BLANK_SUCCESS);
         filter.addAction(BaseAction.ACTION_BLE_SET_CONNECT_BLANK_FAILURE);
+        filter.addAction(BaseAction.ACTION_BLE_SYNC_DATA_SUCCESS);
+        filter.addAction(BaseAction.ACTION_BLE_SYNC_TOTAL_DATA_SUCCESS);
         registerReceiver(receiver, filter);
     }
 
