@@ -179,14 +179,16 @@ public class CommandUtil {
                         BleLog.e("ble 修改蓝牙时间间隔成功");
                         bleManager.sendBleBroadcast(BaseAction.ACTION_BLE_SET_CONNECT_BLANK_SUCCESS);
                         CURRENT_STATE = STATE_DEFAULT;
-                        sendNextAndRemoveFirstCommand();
+
                     } else {
                         BleLog.e("ble 修改蓝牙时间间隔失败");
                         bleManager.sendBleBroadcast(BaseAction.ACTION_BLE_SET_CONNECT_BLANK_FAILURE);
                         //TODO 对于失败的情况暂时不予处理，可以进行重发
                     }
+                    sendNextAndRemoveFirstCommand();
                     break;
                 case BleDataUtil.MSG_RECEIVER_TOTAL_DATA_LENGTH://手环回复数据总长度
+                    BleLog.e("收到手环数据的长度：" + (int) msg.obj);
                     if ((int) msg.obj > 0) {//有数据
                         //发送允许发送数据命令
                         sendAllowSyncDatasComm();
@@ -267,26 +269,28 @@ public class CommandUtil {
      * 发送下一个请求命令
      */
     public void sendNextCommand() {
+        //重置各种重发次数
+        reSetTimes();
         if (commList != null && commList.peek() != null) {
             switch (commList.peek()) {
                 case CommandQueue.QUERY_STATE:
-                    BleLog.e("请求命令：查询设备状态");
+                    BleLog.e("========请求命令：查询设备状态=====");
                     sendQueryStateComm();
                     break;
                 case CommandQueue.SET_SEND_BLANK:
-                    BleLog.e("请求命令：设置蓝牙传输间隔");
+                    BleLog.e("=====请求命令：设置蓝牙传输间隔=====");
                     sendSetCommandBlankComm(defaultConnectionBlank);
                     break;
                 case CommandQueue.SYNC_SPORTS_DATA:
-                    BleLog.e("请求命令：请求运动数据");
+                    BleLog.e("======请求命令：请求运动数据=======");
                     sendSyncSportsDatas(true);
                     break;
                 case CommandQueue.SYNC_SLEEP_DATA:
-                    BleLog.e("请求命令：请求睡眠数据");
+                    BleLog.e("======请求命令：请求睡眠数据========");
                     sendSyncSleepDatas(true);
                     break;
                 case CommandQueue.SYNC_HEART_RATE_DATA:
-                    BleLog.e("请求命令：请求心率数据");
+                    BleLog.e("=======请求命令：请求心率数据========");
                     sendSyncHeartRateDatas(true);
                     break;
             }
@@ -411,13 +415,17 @@ public class CommandUtil {
             if (handler != null) {
                 handler.removeMessages(MSG_SEND_COMMAND_TIME_OUT);
                 //3.写入失败，重新发送
-                Message message=handler.obtainMessage(MSG_SEND_COMMAND_FAILURE);
-                handler.sendMessage(message);
+                if (bleManager.getBluetoothGatt() != null && bleManager.getWriteCharacteristic() != null) {
+                    //如果蓝牙没有异常，只是写入失败，发消息重发
+                    Message message = handler.obtainMessage(MSG_SEND_COMMAND_FAILURE);
+                    handler.sendMessage(message);
+                } else {
+                    //重新连接蓝牙，清空数据
+                    bleDataUtil.clearDataList();
+                }
             }
         }
     }
-
-
 
     /**
      * 发送求重发指令
@@ -626,7 +634,7 @@ public class CommandUtil {
      * 发送同步（全部）数据成功指令
      */
     private void sendSyncDataSuccessComm() {
-        BleLog.e("同步数据成功，清除数据：当前类型"+currentCommType);
+        BleLog.e("同步数据成功，清除当前类型 ： " + currentCommType);
         currentComm = CommandProtocol.getReceiveSyncDataCorrectProtocol(currentCommType);
         CURRENT_STATE = STATE_SEND_SYNC_DATA_SUCCESS;
         bleManager.writeCharacteristic(currentComm);
@@ -654,5 +662,15 @@ public class CommandUtil {
                 break;
         }
         return sendCommandTimeOut;
+    }
+
+    /**
+     * 重置当前的各种重发次数
+     */
+    public void reSetTimes() {
+        CURRENT_RESEND_COMMAND_TIMES = 0;
+        CURRENT_CHECK_TOTAL_DATA_LENGTH_ERROR_TIMES = 0;
+        CURRENT_DATA_CHECK_ERROR_TIMES = 0;
+        CURRENT_STATE = STATE_DEFAULT;
     }
 }

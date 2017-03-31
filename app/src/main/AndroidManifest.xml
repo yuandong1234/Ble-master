@@ -18,7 +18,6 @@
         </activity>
         <activity android:name=".DeviceDetailActivity" />
         <activity android:name=".OperateActivity" />
-        <activity android:name=".SendCommandActivity"></activity>
     </application>
 
 </manifest>

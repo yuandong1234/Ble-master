@@ -180,15 +180,16 @@ public class BleManager {
                         if (handler != null) {
                             handler.removeMessages(MSG_CONNECT_TIMEOUT);
                         }
+
                         //发广播通知连接断开
                         sendBleBroadcast(BaseAction.ACTION_DEVICE_DISCONNECTED);
                         //TODO 在这里如果有需要可以进行重连操作（暂时不做处理）
-//                        runOnMainThread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                close();
-//                            }
-//                        });
+                        runOnMainThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                close();
+                            }
+                        });
                         break;
                 }
             } else {
@@ -797,12 +798,12 @@ public class BleManager {
     }
 
     public boolean writeCharacteristic(BluetoothGattCharacteristic characteristic, byte[] data) {
-        if (characteristic == null) {
-            BleLog.e(" write characteristic  is null");
-            sendBleBroadcast(BaseAction.ACTION_BLE_ERROR);
-            return false;
-        }
-        if (checkBluetoothGatt()) {
+//        if (characteristic == null) {
+//            BleLog.e(" write characteristic  is null");
+//            sendBleBroadcast(BaseAction.ACTION_BLE_ERROR);
+//            return false;
+//        }
+        if (bluetoothGatt!=null&&characteristic!=null) {
             writeTime = System.currentTimeMillis();
             state = State.WRITE_PROCESS;
             BleLog.e(characteristic.getUuid() + " characteristic write bytes: "
@@ -816,9 +817,14 @@ public class BleManager {
             BleLog.e("写入 characteristic ：" + isSuccess);
             return handleAfterInitialed(isSuccess, BaseAction.ACTION_BLE_WRITE_FAILURE);
         } else {
-            //TODO 重新连接
-            BleLog.e("发送命令时蓝牙异常，重新连接");
-            reConnect();
+            BleLog.e("bluetoothGatt == "+bluetoothGatt+ "   characteristic = "+characteristic);
+            BleLog.e("蓝牙异常，重新连接...");
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    reConnect();
+                }
+            },100);
             return false;
         }
     }
@@ -917,7 +923,7 @@ public class BleManager {
                 public void run() {
                     connect(mBleDevice, false);
                 }
-            }, 100);
+            }, 200);
         } else {
             reConnectTimes = 0;//重置重连次数
             clear();
@@ -1075,7 +1081,7 @@ public class BleManager {
 
     //发送广播
     public void sendBleBroadcast(String action) {
-        if(context!=null){
+        if (context != null) {
             context.sendBroadcast(new Intent(action), BaseAction.RECEIVE_BROADCAST_PERMISSION);
         }
     }
