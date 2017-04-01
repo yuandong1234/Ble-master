@@ -1,1 +1,1 @@
-include ':app', ':BLESDK'
+include ':app', ':BLESDK', ':BaseLibrary'

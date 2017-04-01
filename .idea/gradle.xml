@@ -9,6 +9,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/BLESDK" />
+            <option value="$PROJECT_DIR$/BaseLibrary" />
             <option value="$PROJECT_DIR$/app" />
           </set>
         </option>
