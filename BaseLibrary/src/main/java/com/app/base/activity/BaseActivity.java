@@ -1,21 +1,17 @@
 package com.app.base.activity;
 
-import android.annotation.TargetApi;
 import android.content.pm.ActivityInfo;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 
 import com.app.base.R;
-import com.app.base.util.SystemBarTintManager;
+import com.app.base.util.StatusBarUtil;
 
 import me.yokeyword.fragmentation.SupportActivity;
 
-public abstract class BaseActivity extends SupportActivity {
+public abstract class BaseActivity extends SupportActivity implements View.OnClickListener {
 
     /*统一日志打印TAG*/
     protected final String TAG = this.getClass().getSimpleName();
@@ -50,19 +46,30 @@ public abstract class BaseActivity extends SupportActivity {
         }
         //判断允许是全屏
         if (mAllowFullScreen) {
-            requestWindowFeature(Window.FEATURE_NO_TITLE);
-        }
-        //是否沉侵式标题栏
-        if (isSetStatusBar) {
-            setStatusBar();
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().hide();
+            }
+            //此方法对Activity有效，对AppCompatActivity无效
+            //this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         }
         //写入布局
         setContentView(mContextView);
+        //是否沉侵式标题栏
+        setStatusBar();
         if (!isAllowScreenRoate) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
         initView(mContextView);
         initListener();
+        initData();
+
+    }
+
+    /**
+     * 设置状态栏的样式
+     */
+    protected void setStatusBar() {
+        StatusBarUtil.setColor(this, getResources().getColor(R.color.colorPrimary));
     }
 
     /**
@@ -99,27 +106,15 @@ public abstract class BaseActivity extends SupportActivity {
     protected abstract void initListener();
 
     /**
-     * 设置沉浸式状态栏
+     * 数据逻辑处理
      */
-    private void setStatusBar() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            setTranslucentStatus(true);
-            SystemBarTintManager tintManager = new SystemBarTintManager(this);
-            tintManager.setStatusBarTintEnabled(true);
-            tintManager.setStatusBarTintResource(R.color.colorPrimaryDark);//通知栏所需颜色
-        }
-    }
+    protected abstract void initData();
 
-    @TargetApi(19)
-    private void setTranslucentStatus(boolean on) {
-        Window win = getWindow();
-        WindowManager.LayoutParams winParams = win.getAttributes();
-        final int bits = WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
-        if (on) {
-            winParams.flags |= bits;
-        } else {
-            winParams.flags &= ~bits;
-        }
-        win.setAttributes(winParams);
+
+    /**
+     *点击事件
+     */
+    @Override
+    public void onClick(View v) {
     }
 }
