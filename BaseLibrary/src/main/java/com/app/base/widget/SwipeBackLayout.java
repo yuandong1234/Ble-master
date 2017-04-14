@@ -55,7 +55,8 @@ public class SwipeBackLayout extends FrameLayout {
         //阴影的宽度
         mShadowWidth = ((int) getResources().getDisplayMetrics().density) * 16;
         //得到屏幕的宽度
-       mScreenWidth = mActivity.getWindowManager().getDefaultDisplay().getWidth();
+        mScreenWidth = mActivity.getWindowManager().getDefaultDisplay().getWidth();
+        mMinX = mScreenWidth / 10;
     }
 
     @Override
@@ -63,12 +64,10 @@ public class SwipeBackLayout extends FrameLayout {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 mLastMoveX = (int) event.getX();
-                mMinX = mScreenWidth / 10;
                 //如果设置必须从边缘
-                if(edgeOnly&&mLastMoveX>20){
-                        return super.onTouchEvent(event);
+                if (edgeOnly && mLastMoveX > 20) {
+                    return super.onTouchEvent(event);
                 }
-
                 break;
             case MotionEvent.ACTION_MOVE:
                 int eventX = (int) event.getX();
