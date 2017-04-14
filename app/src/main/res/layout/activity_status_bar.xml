@@ -71,12 +71,20 @@
                 android:layout_marginTop="15dp"
                 android:text="头部为图片的透明效果"/>
             <Button
-                android:id="@+id/statusBarInFragment"
+            android:id="@+id/statusBarInFragment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="15dp"
+            android:text="Fragment状态栏标题栏效果"/>
+
+            <Button
+                android:id="@+id/statusBarSwipeActivity"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="15dp"
-                android:text="Fragment状态栏标题栏效果"/>
+                android:text="向右滑动关闭activity状态栏标题栏效果"/>
         </LinearLayout>
     </FrameLayout>
     <android.support.design.widget.NavigationView

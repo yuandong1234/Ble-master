@@ -8,6 +8,7 @@ import android.view.View;
 
 import com.app.base.R;
 import com.app.base.util.StatusBarUtil;
+import com.app.base.widget.SwipeBackLayout;
 
 import me.yokeyword.fragmentation.SupportActivity;
 
@@ -18,11 +19,6 @@ public abstract class BaseActivity extends SupportActivity implements View.OnCli
 
     /* 当前Activity渲染的视图View**/
     private View mContextView = null;
-
-    /**
-     * 是否沉浸状态栏
-     **/
-    protected boolean isSetStatusBar = true;
     /**
      * 是否允许全屏
      **/
@@ -31,6 +27,11 @@ public abstract class BaseActivity extends SupportActivity implements View.OnCli
      * 是否禁止旋转屏幕
      **/
     protected boolean isAllowScreenRoate = false;
+
+    /**
+     * 是否允许侧滑关闭activity
+     */
+    protected boolean isSwipeBack=false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +57,8 @@ public abstract class BaseActivity extends SupportActivity implements View.OnCli
         setContentView(mContextView);
         //是否沉侵式标题栏
         setStatusBar();
+        //设置右滑关闭当前的activity
+        setSwipeBackMode();
         if (!isAllowScreenRoate) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
@@ -72,6 +75,15 @@ public abstract class BaseActivity extends SupportActivity implements View.OnCli
         StatusBarUtil.setColor(this, getResources().getColor(R.color.colorPrimary));
     }
 
+    /**
+     * 设置右滑关闭当前activity
+     */
+    protected  void setSwipeBackMode(){
+        if(isSwipeBack){
+           new SwipeBackLayout(this).bind();
+        }
+
+    }
     /**
      * 初始化传递的参数
      *

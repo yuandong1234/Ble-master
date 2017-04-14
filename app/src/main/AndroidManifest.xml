@@ -30,7 +30,8 @@
             android:name=".ImageViewTransparentActivity"
             android:label="@string/title_activity_image_view_transparent" />
         <activity android:name=".statusbar.ImageViewTransparentActivity" />
-        <activity android:name=".statusbar.FragmentStatusBarActivity"></activity>
+        <activity android:name=".statusbar.FragmentStatusBarActivity" />
+        <activity android:name=".statusbar.SwipeBackAtivity"></activity>
     </application>
 
 </manifest>

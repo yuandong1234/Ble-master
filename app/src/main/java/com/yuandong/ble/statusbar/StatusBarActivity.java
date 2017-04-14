@@ -27,7 +27,8 @@ public class StatusBarActivity extends BaseActivity{
     private int mStatusBarColor;
     private int mAlpha = StatusBarUtil.DEFAULT_STATUS_BAR_ALPHA;
     private ViewGroup contentLayout;
-    private Button changeToTranslucent,changeColor,transparent,imageViewTransparent,statusBarInFragment;
+    private Button changeToTranslucent,changeColor,transparent,
+            imageViewTransparent,statusBarInFragment,statusBarSwipeActivity;
     private boolean isChange;
 
     @Override
@@ -55,6 +56,7 @@ public class StatusBarActivity extends BaseActivity{
         transparent=(Button)view.findViewById(R.id.transparent);
         imageViewTransparent=(Button)view.findViewById(R.id.imageViewTransparent);
         statusBarInFragment=(Button)view.findViewById(R.id.statusBarInFragment);
+        statusBarSwipeActivity=(Button)view.findViewById(R.id.statusBarSwipeActivity);
     }
 
     @Override
@@ -65,6 +67,7 @@ public class StatusBarActivity extends BaseActivity{
         transparent.setOnClickListener(this);
         imageViewTransparent.setOnClickListener(this);
         statusBarInFragment.setOnClickListener(this);
+        statusBarSwipeActivity.setOnClickListener(this);
     }
 
     @Override
@@ -113,6 +116,9 @@ public class StatusBarActivity extends BaseActivity{
                 break;
             case R.id.statusBarInFragment:
                 startActivity(new Intent(this,FragmentStatusBarActivity.class));
+                break;
+            case R.id.statusBarSwipeActivity:
+                startActivity(new Intent(this,SwipeBackAtivity.class));
                 break;
         }
     }
