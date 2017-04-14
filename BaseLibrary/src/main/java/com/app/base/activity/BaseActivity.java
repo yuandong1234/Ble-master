@@ -33,6 +33,7 @@ public abstract class BaseActivity extends SupportActivity implements View.OnCli
      */
     protected boolean isSwipeBack=false;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -15,6 +15,7 @@ import android.widget.Scroller;
 import com.app.base.R;
 
 /**
+ * 右滑关闭当前的activity效果
  * Created by yuandong on 2017/4/14.
  */
 
@@ -24,11 +25,17 @@ public class SwipeBackLayout extends FrameLayout {
 
     private Activity mActivity;
     private Scroller mScroller;
-    private int mShadowWidth;
+    private int mShadowWidth;//阴影宽度
     private Drawable mLeftShadow;
     private int mLastMoveX;
     private int mScreenWidth;
     private int mMinX;
+    private boolean edgeOnly = false;//是否从边缘滑动
+
+    public SwipeBackLayout setEdgeOnly(boolean edgeOnly) {
+        this.edgeOnly = edgeOnly;
+        return this;
+    }
 
     public SwipeBackLayout(Context context) {
         this(context, null);
@@ -41,11 +48,9 @@ public class SwipeBackLayout extends FrameLayout {
 
     //初始化
     private void init(Context context) {
-        Log.d(TAG, "初始化 ");
         this.mActivity = (Activity) context;
         mScroller = new Scroller(context);
         //滑动时渐变的阴影
-        //noinspection deprecation
         mLeftShadow = getResources().getDrawable(R.drawable.shadow_left);
         //阴影的宽度
         mShadowWidth = ((int) getResources().getDisplayMetrics().density) * 16;
@@ -59,6 +64,11 @@ public class SwipeBackLayout extends FrameLayout {
             case MotionEvent.ACTION_DOWN:
                 mLastMoveX = (int) event.getX();
                 mMinX = mScreenWidth / 10;
+                //如果设置必须从边缘
+                if(edgeOnly&&mLastMoveX>20){
+                        return super.onTouchEvent(event);
+                }
+
                 break;
             case MotionEvent.ACTION_MOVE:
                 int eventX = (int) event.getX();
