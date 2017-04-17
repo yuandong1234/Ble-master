@@ -27,7 +27,8 @@ public class SwipeBackLayout extends FrameLayout {
     private Scroller mScroller;
     private int mShadowWidth;//阴影宽度
     private Drawable mLeftShadow;
-    private int mLastMoveX;
+    private int mLastX;
+    private int mLastY;
     private int mScreenWidth;
     private int mMinX;
     private boolean edgeOnly = false;//是否从边缘滑动
@@ -63,23 +64,31 @@ public class SwipeBackLayout extends FrameLayout {
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                mLastMoveX = (int) event.getX();
+                mLastX = (int) event.getX();
+                mLastY=(int)event.getY();
                 //如果设置必须从边缘
-                if (edgeOnly && mLastMoveX > 20) {
+                if (edgeOnly && mLastX > 20) {
                     return super.onTouchEvent(event);
                 }
+
                 break;
             case MotionEvent.ACTION_MOVE:
                 int eventX = (int) event.getX();
-                Log.d(TAG, "eventX: " + eventX);
-                int dx = mLastMoveX - eventX;
+                int eventY=(int) event.getY();
+                Log.d(TAG, "eventX: " + eventX+ "eventY :"+eventY);
+                int dx = mLastX - eventX;
+                int dy=mLastY-eventY;
+                //如果第一次滑动时，水平方向滑动的距离小于竖直方向滑动的距离则不滑动
+                if(Math.abs(dx)<Math.abs(dy)&&getScrollX()==0){
+                    return super.onTouchEvent(event);
+                }
                 if (getScrollX() + dx >= 0) {
                     scrollTo(0, 0);
                 } else if (eventX > mMinX) {
                     //手指处于屏幕边缘时不处理滑动
                     scrollBy(dx, 0);
                 }
-                mLastMoveX = eventX;
+                mLastX = eventX;
                 break;
             case MotionEvent.ACTION_UP:
                 if (-getScrollX() < mScreenWidth / 2) {
