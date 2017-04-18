@@ -1,27 +1,33 @@
 apply plugin: 'com.android.application'
-
+apply plugin: 'com.jakewharton.butterknife'
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    compileSdkVersion 24
+    buildToolsVersion '24.0.2'
     defaultConfig {
         applicationId "com.yuandong.ble"
         minSdkVersion 18
         targetSdkVersion 22
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
 }
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:23.+'
     compile project(':BLESDK')
-    compile project(':baselibrary')
+    compile project(':BaseLibrary')
+    // butterknife
+    compile 'com.android.support:appcompat-v7:24.2.1'
+    compile 'com.jakewharton:butterknife:8.5.1'
+    compile 'com.android.support:design:24.2.1'
+    compile 'com.android.support:support-v4:24.2.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
 }

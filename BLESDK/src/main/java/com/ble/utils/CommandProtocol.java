@@ -38,7 +38,7 @@ public class CommandProtocol {
     }
 
     /**
-     * 构建请求同步运动数据协议
+     * 构建请求 同步运动数据协议
      *
      * @return
      */
@@ -47,7 +47,7 @@ public class CommandProtocol {
     }
 
     /**
-     * 构建请求同步睡眠数据协议
+     * 构建请求 同步睡眠数据协议
      *
      * @return
      */
@@ -88,7 +88,17 @@ public class CommandProtocol {
         tempProtocol[5] = (byte) (tempProtocol[2] + tempProtocol[3] + tempProtocol[4]);
         return tempProtocol;
     }
-
+    /**
+     * 构建请求重发数据协议
+     * @param type  请求数据类型
+     * @return
+     */
+    public static byte[] getRequestResendProtocol(byte type) {
+        byte[] tempProtocal = { 0x55, (byte) 0xAA, 0x02, (byte) 0xC1, type,
+                0x00 };
+        tempProtocal[5] = (byte) (tempProtocal[2] + tempProtocal[3] + tempProtocal[4]);
+        return tempProtocal;
+    }
     /**
      * 构建 回复接收指定数据成功 协议（全部数据接收完成）
      *
