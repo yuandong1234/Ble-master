@@ -17,21 +17,21 @@
         <activity android:name=".bluetooth.BleActivity" />
         <activity android:name=".bluetooth.DeviceDetailActivity" />
         <activity android:name=".bluetooth.OperateActivity" />
-        <activity android:name=".statusbar.StatusBarActivity">
-        </activity>
+        <activity android:name=".statusbar.StatusBarActivity"></activity>
         <activity android:name=".statusbar.StatusBarColorActivity" />
         <activity android:name=".statusbar.TransparentActivity" />
         <activity android:name=".statusbar.ImageViewTransparentActivity" />
         <activity android:name=".statusbar.FragmentStatusBarActivity" />
         <activity android:name=".statusbar.SwipeBackAtivity" />
-        <activity android:name=".mvp.MvpTestActivity">
+        <activity android:name=".mvp.MvpTestActivity"></activity>
+        <activity android:name=".mvp.MvpTest2Activity" />
+        <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".mvp.MvpTest2Activity"></activity>
     </application>
 
 </manifest>
