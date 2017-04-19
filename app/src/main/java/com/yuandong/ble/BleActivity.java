@@ -65,7 +65,7 @@ public class BleActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.ble_activity_main);
+        setContentView(R.layout.activity_ble_main);
         supportTv = (TextView) findViewById(R.id.scan_ble_support);
         statusTv = (TextView) findViewById(R.id.scan_ble_status);
         deviceLv = (ListView) findViewById(android.R.id.list);
