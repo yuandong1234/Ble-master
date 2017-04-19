@@ -15,7 +15,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
@@ -62,7 +61,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_operate);
-        mDevice = getIntent().getParcelableExtra(MainActivity.EXTRA_DEVICE);
+        mDevice = getIntent().getParcelableExtra(BleActivity.EXTRA_DEVICE);
         initView();
         registerBleBroadcast();
     }

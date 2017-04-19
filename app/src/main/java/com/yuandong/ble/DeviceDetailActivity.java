@@ -34,7 +34,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_detail);
-        bleDevice = getIntent().getParcelableExtra(MainActivity.EXTRA_DEVICE);
+        bleDevice = getIntent().getParcelableExtra(BleActivity.EXTRA_DEVICE);
 
         initView();
     }
@@ -78,7 +78,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 if (bleDevice == null) return false;
                 //Intent intent = new Intent(DeviceDetailActivity.this, DeviceControlActivity.class);
                 Intent intent = new Intent(DeviceDetailActivity.this, OperateActivity.class);
-                intent.putExtra(MainActivity.EXTRA_DEVICE, bleDevice);
+                intent.putExtra(BleActivity.EXTRA_DEVICE, bleDevice);
                 startActivity(intent);
                 break;
         }

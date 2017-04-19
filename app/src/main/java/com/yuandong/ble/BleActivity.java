@@ -1,7 +1,6 @@
 package com.yuandong.ble;
 
 import android.content.Intent;
-import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -21,7 +20,7 @@ import com.yuandong.ble.adapter.DeviceAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class BleActivity extends AppCompatActivity {
     public static final String EXTRA_DEVICE = "extra_device";
     private TextView supportTv, statusTv, scanCountTv;
     private ListView deviceLv;
@@ -66,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.ble_activity_main);
         supportTv = (TextView) findViewById(R.id.scan_ble_support);
         statusTv = (TextView) findViewById(R.id.scan_ble_status);
         deviceLv = (ListView) findViewById(android.R.id.list);
@@ -80,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 BleDevice device = (BleDevice) adapter.getItem(position);
                 if (device == null) return;
-                Intent intent = new Intent(MainActivity.this, DeviceDetailActivity.class);
+                Intent intent = new Intent(BleActivity.this, DeviceDetailActivity.class);
                 intent.putExtra(EXTRA_DEVICE, device);
                 startActivity(intent);
             }
