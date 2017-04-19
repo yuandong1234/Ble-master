@@ -1,7 +1,7 @@
 package com.app.base.model;
 
 /**
- * 基类BaseModel
+ * 用于MVP基类BaseModel
  * Created by yuandong on 2017/4/19.
  */
 

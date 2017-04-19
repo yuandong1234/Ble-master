@@ -1,7 +1,7 @@
 package com.app.base.view;
 
 /**
- * 基类baseView
+ * 用于MVP基类baseView
  * Created by yuandong on 2017/4/19.
  */
 

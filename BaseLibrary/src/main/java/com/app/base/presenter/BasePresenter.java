@@ -7,7 +7,7 @@ import com.app.base.util.TUtil;
 import java.lang.ref.WeakReference;
 
 /**
- * 基类BasePresenter
+ * 用于MVP基类BasePresenter
  * Created by yuandong on 2017/4/19.
  */
 
