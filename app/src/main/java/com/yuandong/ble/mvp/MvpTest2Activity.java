@@ -13,7 +13,6 @@ public class MvpTest2Activity extends BaseActivity<MvpTestPresenter> implements 
 
     @Override
     protected void initParams(Bundle params) {
-
     }
 
     @Override
