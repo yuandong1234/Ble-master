@@ -24,9 +24,9 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile project(':BLESDK')
     compile project(':BaseLibrary')
-    // butterknife
     compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'com.android.support:design:24.2.1'
+    // butterknife
     compile 'com.jakewharton:butterknife:8.5.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
 }
