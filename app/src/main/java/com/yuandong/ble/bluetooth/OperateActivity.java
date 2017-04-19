@@ -1,4 +1,4 @@
-package com.yuandong.ble;
+package com.yuandong.ble.bluetooth;
 
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothGatt;
@@ -31,6 +31,7 @@ import com.ble.model.Sleep;
 import com.ble.model.Sport;
 import com.ble.utils.BleLog;
 import com.ble.utils.CommandUtil;
+import com.yuandong.ble.R;
 
 import java.util.ArrayList;
 import java.util.HashMap;

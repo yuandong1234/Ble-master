@@ -1,4 +1,4 @@
-package com.yuandong.ble;
+package com.yuandong.ble.bluetooth;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -8,6 +8,7 @@ import android.view.MenuItem;
 import android.widget.TextView;
 
 import com.ble.model.BleDevice;
+import com.yuandong.ble.R;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

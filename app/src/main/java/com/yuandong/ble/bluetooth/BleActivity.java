@@ -1,4 +1,4 @@
-package com.yuandong.ble;
+package com.yuandong.ble.bluetooth;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +15,8 @@ import com.ble.model.BleDevice;
 import com.ble.model.BleDeviceStore;
 import com.ble.utils.BleLog;
 import com.ble.utils.BleUtil;
+import com.yuandong.ble.MyApplication;
+import com.yuandong.ble.R;
 import com.yuandong.ble.adapter.DeviceAdapter;
 
 import java.util.ArrayList;
