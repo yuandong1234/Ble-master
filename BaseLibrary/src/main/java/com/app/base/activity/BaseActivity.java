@@ -7,12 +7,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 
 import com.app.base.R;
+import com.app.base.presenter.BasePresenter;
 import com.app.base.util.StatusBarUtil;
+import com.app.base.util.TUtil;
+import com.app.base.view.BaseView;
 import com.app.base.widget.SwipeBackLayout;
 
 import me.yokeyword.fragmentation.SupportActivity;
 
-public abstract class BaseActivity extends SupportActivity implements View.OnClickListener {
+public abstract class BaseActivity<P extends BasePresenter> extends SupportActivity implements View.OnClickListener {
 
     /*统一日志打印TAG*/
     protected final String TAG = this.getClass().getSimpleName();
@@ -32,6 +35,10 @@ public abstract class BaseActivity extends SupportActivity implements View.OnCli
      * 是否允许侧滑关闭activity
      */
     protected boolean isSwipeBack=false;
+    /**
+     * MVP 模式
+     */
+    protected P mPresenter;
 
 
     @Override
@@ -63,6 +70,8 @@ public abstract class BaseActivity extends SupportActivity implements View.OnCli
         if (!isAllowScreenRoate) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
+
+        initPresenter();
         initView(mContextView);
         initListener();
         initData();
@@ -83,7 +92,21 @@ public abstract class BaseActivity extends SupportActivity implements View.OnCli
         if(isSwipeBack){
            new SwipeBackLayout(this).bind();
         }
+    }
 
+    /**
+     * 初始化MVP模式
+     */
+    protected void initPresenter(){
+
+        if(mPresenter==null){
+            mPresenter= TUtil.getT(this,0);
+        }
+        //注意当前的activity必须 implements BaseView
+        if(mPresenter!=null&&this instanceof BaseView){
+            mPresenter.attach(this);
+            Log.d(TAG,"** init mvp model **");
+        }
     }
     /**
      * 初始化传递的参数
@@ -129,5 +152,23 @@ public abstract class BaseActivity extends SupportActivity implements View.OnCli
      */
     @Override
     public void onClick(View v) {
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //避免由于内存回收，可能mPresenter=null
+        if(mPresenter==null){
+            initPresenter();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(mPresenter!=null){
+           mPresenter.detach();
+            mPresenter=null;
+        }
     }
 }
