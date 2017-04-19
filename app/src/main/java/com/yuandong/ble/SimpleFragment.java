@@ -53,7 +53,6 @@ public class SimpleFragment extends BaseFragment {
 
     @Override
     protected void initListener() {
-        Log.e(TAG,"title :  "+title);
         btn.setText(title);
         btn.setOnClickListener(this);
     }

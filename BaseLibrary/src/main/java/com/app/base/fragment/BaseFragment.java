@@ -38,6 +38,7 @@ public abstract class BaseFragment<P extends BasePresenter> extends SupportFragm
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate...");
+        //注意：activity和Fragment之间的参数传递
         Bundle bundle = getArguments();
         if(bundle!=null){
             initParams(bundle);
