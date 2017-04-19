@@ -104,8 +104,8 @@ public abstract class BaseActivity<P extends BasePresenter> extends SupportActiv
         }
         //注意当前的activity必须 implements BaseView
         if(mPresenter!=null&&this instanceof BaseView){
-            mPresenter.attach(this);
-            Log.d(TAG,"** init mvp model **");
+            mPresenter.attach(this,this);
+            Log.d(TAG,"** activity init mvp model **");
         }
     }
     /**

@@ -13,7 +13,6 @@ import com.app.base.presenter.BasePresenter;
 public class MvpTestPresenter extends BasePresenter<MvpTestModel, MvpTestView> {
 
     public void onClick(View v) {
-        Log.e("*******", "+++++++++++++++++++");
         mModel.Click(new CallBack() {
             @Override
             public void doCallBack() {

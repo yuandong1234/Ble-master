@@ -18,11 +18,6 @@
         <activity android:name=".DeviceDetailActivity" />
         <activity android:name=".OperateActivity" />
         <activity android:name=".statusbar.StatusBarActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity android:name=".statusbar.StatusBarColorActivity" />
         <activity android:name=".statusbar.TransparentActivity" />
@@ -30,7 +25,11 @@
         <activity android:name=".statusbar.FragmentStatusBarActivity" />
         <activity android:name=".statusbar.SwipeBackAtivity" />
         <activity android:name=".mvp.MvpTestActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <activity android:name=".mvp.MvpTest2Activity"></activity>
     </application>

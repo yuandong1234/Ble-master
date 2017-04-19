@@ -3,10 +3,7 @@ package com.app.base.presenter;
 import android.app.Activity;
 import android.content.Context;
 
-import com.app.base.model.BaseModel;
 import com.app.base.util.TUtil;
-import com.app.base.view.BaseView;
-
 import java.lang.ref.WeakReference;
 
 /**
@@ -14,7 +11,7 @@ import java.lang.ref.WeakReference;
  * Created by yuandong on 2017/4/19.
  */
 
-public abstract class BasePresenter<M extends BaseModel, V extends BaseView> {
+public abstract class BasePresenter<M,V> {
 
     /**
      * 使用弱引用避免内存泄漏
@@ -36,9 +33,9 @@ public abstract class BasePresenter<M extends BaseModel, V extends BaseView> {
      *
      * @param context
      */
-    public void attach(Context context) {
+    public void attach(Context context,V v) {
         this.mContextRef = new WeakReference<>(context);
-        this.mViewRef = new WeakReference<>((V) context);
+        this.mViewRef = new WeakReference<>(v);
         mContext = mContextRef.get();
         mView = mViewRef.get();
         this.mModel = TUtil.getT(this, 0);
