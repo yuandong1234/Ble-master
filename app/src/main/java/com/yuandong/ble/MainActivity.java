@@ -9,6 +9,7 @@ import android.support.design.widget.TabLayout;
 
 import com.app.base.activity.BaseActivity;
 import com.yuandong.ble.adapter.ViewPagerAdapter;
+import com.yuandong.ble.retrofit.RetrofitFragment;
 
 import java.util.ArrayList;
 
@@ -18,6 +19,7 @@ public class MainActivity extends BaseActivity {
     public final static String BLUETOOTH = "蓝牙";
     public final static String STATUSBAR = "状态栏";
     public final static String MVP = "mvp";
+    public final static String RETROFIT = "retrofit";
     public final static String COORDINATORLAYOUT = "滚动效果";
     private ViewPagerAdapter adapter;
 
@@ -57,12 +59,13 @@ public class MainActivity extends BaseActivity {
         titles.add(STATUSBAR);
         titles.add(MVP);
         titles.add(COORDINATORLAYOUT);
+        titles.add(RETROFIT);
         ArrayList<Fragment> fragments = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
             fragments.add(SimpleFragment.newInstance(titles.get(i)));
-
         }
-        fragments.add(CoordinatorLayoutFragment.newInstance(titles.get(3)));
+        fragments.add(CoordinatorLayoutFragment.newInstance());
+        fragments.add(RetrofitFragment.newInstance());
         adapter.addItems(fragments,titles);
     }
 }

@@ -31,4 +31,8 @@ dependencies {
     // butterknife
     compile 'com.jakewharton:butterknife:8.5.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
+    //logger日志
+    compile 'com.orhanobut:logger:1.15'
+    //glide
+    compile 'com.github.bumptech.glide:glide:3.7.0'
 }

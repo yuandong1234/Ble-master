@@ -19,28 +19,19 @@ import java.util.Random;
  */
 
 public class CoordinatorLayoutFragment extends BaseFragment {
-    public static final String ARGUMENT = "argument";
-    private String title;
+
     private RecyclerView recyclerView;
     private LinearLayoutManager mLayoutManager;
     private MyAdapter adapter;
     private ArrayList<Image> pics;
 
-    /**
-     * 传入需要的参数，设置给arguments
-     * @param argument
-     * @return
-     */
-    public static CoordinatorLayoutFragment newInstance(String argument) {
-        Bundle bundle = new Bundle();
-        bundle.putString(ARGUMENT, argument);
+    public static CoordinatorLayoutFragment newInstance() {
         CoordinatorLayoutFragment contentFragment = new CoordinatorLayoutFragment();
-        contentFragment.setArguments(bundle);
         return contentFragment;
     }
+
     @Override
     protected void initParams(Bundle params) {
-        title=params.getString(ARGUMENT);
     }
 
     @Override
@@ -73,7 +64,7 @@ public class CoordinatorLayoutFragment extends BaseFragment {
         for (int i = 0; i < 15; i++) {
             Image image = new Image();
             image.image = R.mipmap.pic_01;
-            image.name = "图片"+new Random().nextInt();
+            image.name = "图片" + new Random().nextInt();
             data.add(image);
         }
         adapter.addItem(data);
