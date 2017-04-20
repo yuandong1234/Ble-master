@@ -8,6 +8,7 @@ import android.support.design.widget.TabLayout;
 
 
 import com.app.base.activity.BaseActivity;
+import com.yuandong.ble.adapter.ViewPagerAdapter;
 
 import java.util.ArrayList;
 
@@ -17,6 +18,7 @@ public class MainActivity extends BaseActivity {
     public final static String BLUETOOTH = "蓝牙";
     public final static String STATUSBAR = "状态栏";
     public final static String MVP = "mvp";
+    public final static String COORDINATORLAYOUT = "滚动效果";
     private ViewPagerAdapter adapter;
 
     @Override
@@ -54,10 +56,13 @@ public class MainActivity extends BaseActivity {
         titles.add(BLUETOOTH);
         titles.add(STATUSBAR);
         titles.add(MVP);
+        titles.add(COORDINATORLAYOUT);
         ArrayList<Fragment> fragments = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
             fragments.add(SimpleFragment.newInstance(titles.get(i)));
+
         }
+        fragments.add(CoordinatorLayoutFragment.newInstance(titles.get(3)));
         adapter.addItems(fragments,titles);
     }
 }
