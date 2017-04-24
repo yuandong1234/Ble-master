@@ -1,4 +1,4 @@
-package com.app.base.api;
+package com.app.base.Http;
 
 import java.util.Map;
 
