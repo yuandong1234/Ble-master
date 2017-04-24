@@ -32,12 +32,11 @@ public interface ServiceApi<T> {
     /**
      * post请求 参数为json格式
      * @param filePath 接口名称
-     * @param body 传入的参数为RequestBody
+     * @param jsonBody 传入的参数
      * @return
      */
-    @Headers({"Content-Type: application/json","Accept: application/json"})//需要添加头
     @POST("{filePath}")
-    Call<T> post(@Path("filePath")String filePath,@Body RequestBody body);
+    Call<T> post(@Path("filePath")String filePath,@Body RequestBody jsonBody);
 
     /**
      * get请求
