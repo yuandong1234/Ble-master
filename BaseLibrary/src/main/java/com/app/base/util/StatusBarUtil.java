@@ -17,6 +17,7 @@ import android.widget.LinearLayout;
 import com.app.base.R;
 
 /**
+ * 系统状态栏工具类
  * Created by Jaeger on 16/2/14.
  * <p>
  * Email: chjie.jaeger@gmail.com

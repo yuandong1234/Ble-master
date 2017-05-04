@@ -28,7 +28,7 @@ public class RetrofitClient {
         if (singleton == null) {
             synchronized (RetrofitClient.class) {
                 if (singleton == null) {
-                    mContext = context.getApplicationContext();
+                    mContext = context;
                     singleton = new RetrofitClient();
                 }
             }
@@ -40,11 +40,11 @@ public class RetrofitClient {
     /**
      * 自定义配置OkhttpClient
      */
-    public OkHttpClient build() {
+    public OkHttpClient create() {
         if(okHttpClient==null){
             OkHttpClient client = new OkHttpClient.Builder()
-                    .addInterceptor(new DownLoadInterceptor(BASE_URL))
-                    .addInterceptor(new RetryAndChangeIpInterceptor(BASE_URL, SERVERS))
+                    //.addInterceptor(new DownLoadInterceptor(BASE_URL))
+                   // .addInterceptor(new RetryAndChangeIpInterceptor(BASE_URL, SERVERS))
                     .addNetworkInterceptor(new CacheInterceptor())
                     .cache(new CacheProvider(mContext).provideCache())
                     .retryOnConnectionFailure(true)
@@ -52,7 +52,7 @@ public class RetrofitClient {
                     .readTimeout(DEFAULT_TIME, TimeUnit.SECONDS)
                     .writeTimeout(DEFAULT_TIME, TimeUnit.SECONDS)
                     .build();
-            if (BuildConfig.DEBUG) {//printf logs while  debug
+            if (BuildConfig.DEBUG) {//print  logs when  debug
                 HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
                 logging.setLevel(HttpLoggingInterceptor.Level.BODY);
                 client = client.newBuilder().addInterceptor(logging).build();

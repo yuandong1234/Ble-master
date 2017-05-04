@@ -18,7 +18,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
  * Created by yuandong on 2017/4/20.
  */
 
-public class RetrofitUtil {
+public class RetrofitUtil{
 
     private static String TAG=RetrofitUtil.class.getSimpleName();
     public static final String BASE_URL = "http://v.juhe.cn/toutiao/";
