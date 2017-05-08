@@ -4,7 +4,9 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.app.base.http.callback.HttpCallBack;
+import com.app.base.http.callback.ResponseCallBack;
 import com.app.base.http.config.RetrofitClient;
+import com.app.base.http.entity.BaseEntity;
 import com.app.base.util.NetworkUtil;
 
 import java.util.HashMap;
@@ -76,6 +78,7 @@ public class HttpUtil<T> {
             this.url = url;
             return this;
         }
+        //
 
         public HttpUtil build() {
             if (TextUtils.isEmpty(this.url)) {
@@ -103,7 +106,7 @@ public class HttpUtil<T> {
     }
 
     //post请求
-    public void post() {
+    public void post(ResponseCallBack<T> callBack) {
         if(!NetworkUtil.isNetworkAvailable()){
             //提示网络有问题
         }
@@ -117,8 +120,8 @@ public class HttpUtil<T> {
             params.putAll(requestBodyParams);
         }
         checkParams(params);
-        Call<T> call = mService.post(header, mUrl, params);
-        call.enqueue(new HttpCallBack<T>());
+        Call<BaseEntity<T>> call = mService.post(header, mUrl, params);
+        call.enqueue(new HttpCallBack<T>(callBack));
     }
 
 

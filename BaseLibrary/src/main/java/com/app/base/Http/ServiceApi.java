@@ -1,5 +1,7 @@
 package com.app.base.http;
 
+import com.app.base.http.entity.BaseEntity;
+
 import java.util.Map;
 
 import okhttp3.RequestBody;
@@ -30,7 +32,7 @@ public interface ServiceApi<T> {
      */
     @FormUrlEncoded
     @POST("{filePath}")
-    Call<T> post(@HeaderMap Map<String, String> header, @Path("filePath") String filePath, @FieldMap Map<String, String> params);
+    Call<BaseEntity<T>> post(@HeaderMap Map<String, String> header, @Path("filePath") String filePath, @FieldMap Map<String, String> params);
 
     /**
      * post请求 参数为json格式
@@ -40,7 +42,7 @@ public interface ServiceApi<T> {
      * @return
      */
     @POST("{filePath}")
-    Call<T> post(@Path("filePath") String filePath, @Body RequestBody jsonBody);
+    Call<BaseEntity<T>> post(@Path("filePath") String filePath, @Body RequestBody jsonBody);
 
     /**
      * get请求
@@ -49,6 +51,6 @@ public interface ServiceApi<T> {
      * @return
      */
     @GET("{filePath}")
-    Call<T> get(@Path("filePath") String filePath);
+    Call<BaseEntity<T>> get(@Path("filePath") String filePath);
 
 }
