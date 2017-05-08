@@ -6,7 +6,6 @@ import android.text.TextUtils;
 import com.app.base.http.callback.HttpCallBack;
 import com.app.base.http.callback.ResponseCallBack;
 import com.app.base.http.config.RetrofitClient;
-import com.app.base.http.entity.BaseEntity;
 import com.app.base.util.NetworkUtil;
 
 import java.util.HashMap;
@@ -26,13 +25,13 @@ import static com.app.base.http.constant.AppConstant.BASE_URL;
 
 public class HttpUtil<T> {
     private static volatile HttpUtil httpUtil;
-    private static volatile ServiceApi mService;
+    private static volatile ServiceApi  mServiceApi;
     private Map<String, String> headerParams;//自定义请求头
     private Map<String, String> requestBodyParams;//请求体
     private String mUrl;//访问接口
 
-    private HttpUtil(ServiceApi mService, String url, Map<String, String> headerParams, Map<String, String> requestBodyParams) {
-        this.mService = mService;
+    private HttpUtil( ServiceApi serviceApi,String url, Map<String, String> headerParams, Map<String, String> requestBodyParams) {
+        this.mServiceApi=serviceApi;
         this.mUrl = url;
         this.headerParams = headerParams;
         this.requestBodyParams = requestBodyParams;
@@ -79,7 +78,7 @@ public class HttpUtil<T> {
             return this;
         }
         //
-
+        @SuppressWarnings("Unchecked")
         public HttpUtil build() {
             if (TextUtils.isEmpty(this.url)) {
                 throw new NullPointerException("request can not be null");
@@ -91,10 +90,10 @@ public class HttpUtil<T> {
             Retrofit retrofit = builder
                     .baseUrl(BASE_URL + "/")
                     .addConverterFactory(GsonConverterFactory.create())
-                    .client(mClient).build();
-            ServiceApi serviceApi =
-                    retrofit.create(ServiceApi.class);
-            httpUtil = new HttpUtil(serviceApi, url, header, params);
+                    .client(mClient)
+                    .build();
+            ServiceApi serviceApi = retrofit.create(ServiceApi.class);
+            httpUtil = new HttpUtil(serviceApi,url, header, params);
             return httpUtil;
         }
 
@@ -108,6 +107,7 @@ public class HttpUtil<T> {
     //post请求
     public void post(ResponseCallBack<T> callBack) {
         if(!NetworkUtil.isNetworkAvailable()){
+            //TODO 网络监测以及加载弹框的处理
             //提示网络有问题
         }
         Map<String, String> header = addCommonHeader();
@@ -120,8 +120,8 @@ public class HttpUtil<T> {
             params.putAll(requestBodyParams);
         }
         checkParams(params);
-        Call<BaseEntity<T>> call = mService.post(header, mUrl, params);
-        call.enqueue(new HttpCallBack<T>(callBack));
+        Call call = mServiceApi.post(header, mUrl, params);
+        call.enqueue(new HttpCallBack(callBack));
     }
 
 
