@@ -8,11 +8,13 @@ import android.view.View;
 import com.app.base.fragment.BaseFragment;
 import com.app.base.http.HttpUtil;
 import com.app.base.http.callback.ResponseCallBack;
+import com.app.base.http.entity.BaseEntity;
 import com.app.base.util.LogUtils;
 import com.yuandong.ble.R;
 import com.yuandong.ble.adapter.NewsAdapter;
 import com.yuandong.ble.retrofit.entity.BaseResponse;
 import com.yuandong.ble.retrofit.entity.News;
+import com.yuandong.ble.retrofit.entity.NewsListEntity;
 import com.yuandong.ble.retrofit.entity.ResponseResult;
 
 import java.util.ArrayList;
@@ -84,12 +86,14 @@ public class RetrofitFragment extends BaseFragment {
 
         HttpUtil.Builder builder = new HttpUtil.Builder(_mActivity)
                 .url("index")
-                .params(params);
+                .params(params)
+                .model(NewsListEntity.class);
         HttpUtil httpUtil = builder.build();
-        httpUtil.post(new ResponseCallBack<ResponseResult>() {
+        httpUtil.post(new ResponseCallBack<NewsListEntity>() {
             @Override
-            public void onSuccess(ResponseResult responseResult) {
+            public void onSuccess(NewsListEntity entity) {
                 LogUtils.e("success");
+                adapter.addItem(entity.result.data);
             }
 
             @Override
@@ -97,7 +101,5 @@ public class RetrofitFragment extends BaseFragment {
                 LogUtils.e(error);
             }
         });
-
-
     }
 }

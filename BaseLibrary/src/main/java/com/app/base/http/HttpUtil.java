@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import okhttp3.OkHttpClient;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -23,26 +24,30 @@ import static com.app.base.http.constant.AppConstant.BASE_URL;
  * Created by yuandong on 2017/4/24.
  */
 
-public class HttpUtil<T> {
+public class HttpUtil {
     private static volatile HttpUtil httpUtil;
-    private static volatile ServiceApi  mServiceApi;
+    private static volatile ServiceApi mServiceApi;
     private Map<String, String> headerParams;//自定义请求头
     private Map<String, String> requestBodyParams;//请求体
     private String mUrl;//访问接口
+    private Class mModel;//返回数据类型
 
-    private HttpUtil( ServiceApi serviceApi,String url, Map<String, String> headerParams, Map<String, String> requestBodyParams) {
-        this.mServiceApi=serviceApi;
+    private HttpUtil(ServiceApi serviceApi, String url, Map<String, String> headerParams,
+                     Map<String, String> requestBodyParams,Class clazz) {
+        this.mServiceApi = serviceApi;
         this.mUrl = url;
         this.headerParams = headerParams;
         this.requestBodyParams = requestBodyParams;
+        this.mModel=clazz;
     }
 
     public static class Builder {
         private Context mContext;//全局context
         private OkHttpClient mClient;//自定义参数OkHttp
         private String url;//访问接口
-        private Map<String, String> header;
-        private Map<String, String> params;
+        private Map<String, String> header;//消息头
+        private Map<String, String> params;//参数
+        private Class model;
 
         public Builder(Context context) {
             try {
@@ -77,8 +82,12 @@ public class HttpUtil<T> {
             this.url = url;
             return this;
         }
-        //
-        @SuppressWarnings("Unchecked")
+
+        public Builder model(Class model){
+            this.model=model;
+            return this;
+        }
+
         public HttpUtil build() {
             if (TextUtils.isEmpty(this.url)) {
                 throw new NullPointerException("request can not be null");
@@ -93,7 +102,7 @@ public class HttpUtil<T> {
                     .client(mClient)
                     .build();
             ServiceApi serviceApi = retrofit.create(ServiceApi.class);
-            httpUtil = new HttpUtil(serviceApi,url, header, params);
+            httpUtil = new HttpUtil(serviceApi, url, header, params,model);
             return httpUtil;
         }
 
@@ -105,10 +114,13 @@ public class HttpUtil<T> {
     }
 
     //post请求
-    public void post(ResponseCallBack<T> callBack) {
-        if(!NetworkUtil.isNetworkAvailable()){
+    public<T> void post(ResponseCallBack<T> callBack) {
+        //TODO
+        if (!NetworkUtil.isNetworkAvailable()) {
             //TODO 网络监测以及加载弹框的处理
             //提示网络有问题
+        } else {
+
         }
         Map<String, String> header = addCommonHeader();
         if (headerParams != null && headerParams.size() > 0) {
@@ -120,8 +132,10 @@ public class HttpUtil<T> {
             params.putAll(requestBodyParams);
         }
         checkParams(params);
-        Call call = mServiceApi.post(header, mUrl, params);
-        call.enqueue(new HttpCallBack(callBack));
+        Call<ResponseBody> call = mServiceApi.post(header, mUrl, params);
+        //noinspection unchecked
+        call.enqueue(new HttpCallBack(callBack,mModel));
+
     }
 
 
@@ -162,5 +176,4 @@ public class HttpUtil<T> {
         }
         return params;
     }
-
 }

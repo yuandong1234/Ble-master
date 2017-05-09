@@ -8,6 +8,6 @@ import java.util.ArrayList;
 
 public class ResponseResult {
     public String stat;
-    public ArrayList<News>data;
+    public ArrayList<News> data;
 
 }
