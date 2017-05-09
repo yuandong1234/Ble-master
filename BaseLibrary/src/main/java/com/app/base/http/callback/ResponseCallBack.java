@@ -5,7 +5,15 @@ package com.app.base.http.callback;
  * Created by yuandong on 2017/5/5.
  */
 
-public interface ResponseCallBack<T>  {
+public interface ResponseCallBack<T> {
+
+    void onNetworkError();
+
+    void onStart();
+
     void onSuccess(T t);
+
     void onFailure(String error);
+
+    void onFinish();
 }

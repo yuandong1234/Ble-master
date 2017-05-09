@@ -1,5 +1,6 @@
 package com.app.base.http;
 
+import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 
@@ -115,13 +116,19 @@ public class HttpUtil {
 
     //post请求
     public<T> void post(ResponseCallBack<T> callBack) {
-        //TODO
-        if (!NetworkUtil.isNetworkAvailable()) {
-            //TODO 网络监测以及加载弹框的处理
-            //提示网络有问题
-        } else {
 
+        if (!NetworkUtil.isNetworkAvailable()) {
+            //网络异常，比如Toast弹框提示
+            if(callBack!=null){
+                callBack.onNetworkError();
+            }
+        }else{
+            //网络正常，比如加载框dialog
+            if(callBack!=null){
+                callBack.onStart();
+            }
         }
+
         Map<String, String> header = addCommonHeader();
         if (headerParams != null && headerParams.size() > 0) {
             header.putAll(headerParams);
