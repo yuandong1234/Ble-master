@@ -45,7 +45,8 @@ public class NetworkUtil {
      * @return
      */
     public static boolean isNetworkAvailable(){
-        if(isConnected()&&isAvailableByPing()){
+        if(isConnected()){
+       // if(isConnected()&&isAvailableByPing()){
           return true;
         }
         return false;

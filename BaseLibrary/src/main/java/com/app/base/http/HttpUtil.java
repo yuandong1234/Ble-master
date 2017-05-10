@@ -33,12 +33,12 @@ public class HttpUtil {
     private Class mModel;//返回数据类型
 
     private HttpUtil(ServiceApi serviceApi, String url, Map<String, String> headerParams,
-                     Map<String, String> requestBodyParams,Class clazz) {
+                     Map<String, String> requestBodyParams, Class clazz) {
         this.mServiceApi = serviceApi;
         this.mUrl = url;
         this.headerParams = headerParams;
         this.requestBodyParams = requestBodyParams;
-        this.mModel=clazz;
+        this.mModel = clazz;
     }
 
     public static class Builder {
@@ -83,8 +83,8 @@ public class HttpUtil {
             return this;
         }
 
-        public Builder model(Class model){
-            this.model=model;
+        public Builder model(Class model) {
+            this.model = model;
             return this;
         }
 
@@ -102,7 +102,7 @@ public class HttpUtil {
                     .client(mClient)
                     .build();
             ServiceApi serviceApi = retrofit.create(ServiceApi.class);
-            httpUtil = new HttpUtil(serviceApi, url, header, params,model);
+            httpUtil = new HttpUtil(serviceApi, url, header, params, model);
             return httpUtil;
         }
 
@@ -114,8 +114,7 @@ public class HttpUtil {
     }
 
     //post请求
-    public<T> void post(ResponseCallBack<T> callBack) {
-        //TODO
+    public <T> void post(ResponseCallBack<T> callBack) {
         if (!NetworkUtil.isNetworkAvailable()) {
             //TODO 网络监测以及加载弹框的处理
             //提示网络有问题
@@ -134,8 +133,7 @@ public class HttpUtil {
         checkParams(params);
         Call<ResponseBody> call = mServiceApi.post(header, mUrl, params);
         //noinspection unchecked
-        call.enqueue(new HttpCallBack(callBack,mModel));
-
+        call.enqueue(new HttpCallBack(callBack, mModel));
     }
 
 
