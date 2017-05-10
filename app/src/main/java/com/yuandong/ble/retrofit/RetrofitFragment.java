@@ -91,6 +91,16 @@ public class RetrofitFragment extends BaseFragment {
         HttpUtil httpUtil = builder.build();
         httpUtil.post(new ResponseCallBack<NewsListEntity>() {
             @Override
+            public void onNetworkError() {
+
+            }
+
+            @Override
+            public void onStart() {
+
+            }
+
+            @Override
             public void onSuccess(NewsListEntity entity) {
                 LogUtils.e("success");
                 adapter.addItem(entity.result.data);
@@ -99,6 +109,11 @@ public class RetrofitFragment extends BaseFragment {
             @Override
             public void onFailure(String error) {
                 LogUtils.e(error);
+            }
+
+            @Override
+            public void onFinish() {
+
             }
         });
     }
