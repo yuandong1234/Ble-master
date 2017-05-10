@@ -152,7 +152,7 @@ public class HttpUtil {
     private Map<String, String> addCommonHeader() {
         Map<String, String> commonHeader = new HashMap<>();
         //自定义添加一些头部信息
-        commonHeader.put("Cache-Time", "3600*24");
+        commonHeader.put("Cache-Time", 60*60*24+"");
         return commonHeader;
     }
 
