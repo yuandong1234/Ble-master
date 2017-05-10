@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.Toast;
 
 import com.app.base.fragment.BaseFragment;
 import com.app.base.http.HttpUtil;
@@ -92,7 +93,7 @@ public class RetrofitFragment extends BaseFragment {
         httpUtil.post(new ResponseCallBack<NewsListEntity>() {
             @Override
             public void onNetworkError() {
-
+                Toast.makeText(_mActivity,"network unavailable",Toast.LENGTH_SHORT).show();
             }
 
             @Override

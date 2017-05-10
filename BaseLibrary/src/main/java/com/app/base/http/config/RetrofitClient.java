@@ -1,12 +1,11 @@
 package com.app.base.http.config;
 
 import android.content.Context;
+
 import com.app.base.BuildConfig;
 import com.app.base.http.cache.CacheProvider;
 import com.app.base.http.interceptor.CacheInterceptor;
-import com.app.base.http.interceptor.DownLoadInterceptor;
 import com.app.base.http.interceptor.HttpLoggingInterceptor;
-import com.app.base.http.interceptor.RetryAndChangeIpInterceptor;
 
 import java.util.concurrent.TimeUnit;
 
@@ -56,7 +55,7 @@ public class RetrofitClient {
                 HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
                 logging.setLevel(HttpLoggingInterceptor.Level.BODY);
                 client = client.newBuilder().addInterceptor(logging).build();
-            }
+             }
             okHttpClient=client;
             return client;
         }
