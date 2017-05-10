@@ -7,6 +7,7 @@ import com.app.base.util.LogUtils;
 import com.google.gson.Gson;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -39,7 +40,6 @@ public class HttpCallBack<T extends BaseEntity> implements Callback<ResponseBody
         if (response.isSuccessful()) {
             try {
                 String json = response.body().string();
-                //TODO 解析处理
                 if (!TextUtils.isEmpty(json)) {
                     LogUtils.json(json);
                     Gson gson = new Gson();
@@ -49,17 +49,21 @@ public class HttpCallBack<T extends BaseEntity> implements Callback<ResponseBody
                         if (callBack != null) {
                             //noinspection unchecked
                             callBack.onSuccess(bean);
+                            callBack.onFinish();
                         }
                     } else {
-                        //TODO 错误处理
                         //错误数据返回，进行相应的错误处理
                         if (callBack != null) {
                             callBack.onFailure(bean.reason);
+                            callBack.onFinish();
                         }
                     }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+                if(callBack!=null){
+                    callBack.onFinish();
+                }
             }
         }
 
@@ -67,9 +71,16 @@ public class HttpCallBack<T extends BaseEntity> implements Callback<ResponseBody
 
     @Override
     public void onFailure(Call<ResponseBody> call, Throwable t) {
-        //TODO 响应失败处理
-//        if (t instanceof ) {
-//
-//        }
+
+        LogUtils.e(t.getMessage());
+        if(callBack!=null){
+            callBack.onFailure(t.getMessage());
+            callBack.onFinish();
+        }
+
+        if (t instanceof SocketTimeoutException) {
+
+        }
+
     }
 }
