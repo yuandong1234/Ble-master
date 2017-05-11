@@ -103,13 +103,21 @@ public class RetrofitFragment extends BaseFragment {
 
             @Override
             public void onSuccess(NewsListEntity entity) {
-                LogUtils.e("success");
+                LogUtils.e("onSuccess");
                 adapter.addItem(entity.result.data);
             }
 
             @Override
             public void onFailure(String error) {
                 LogUtils.e(error);
+            }
+
+            @Override
+            public void onCache(NewsListEntity newsListEntity) {
+                if(newsListEntity!=null){
+                    LogUtils.e("onCache");
+                    adapter.addItem(newsListEntity.result.data);
+                }
             }
 
             @Override

@@ -5,6 +5,7 @@ import android.content.Context;
 import com.app.base.BuildConfig;
 import com.app.base.http.cache.CacheProvider;
 import com.app.base.http.interceptor.CacheInterceptor;
+import com.app.base.http.interceptor.DiskLruCacheInterceptor;
 import com.app.base.http.interceptor.HttpLoggingInterceptor;
 
 import java.util.concurrent.TimeUnit;
@@ -45,6 +46,7 @@ public class RetrofitClient {
                     //.addInterceptor(new DownLoadInterceptor(BASE_URL))
                    // .addInterceptor(new RetryAndChangeIpInterceptor(BASE_URL, SERVERS))
                     .addNetworkInterceptor(new CacheInterceptor())
+                    .addInterceptor(new DiskLruCacheInterceptor())
                     .cache(new CacheProvider(mContext).provideCache())
                     .retryOnConnectionFailure(true)
                     .connectTimeout(DEFAULT_TIME, TimeUnit.SECONDS)

@@ -12,8 +12,7 @@ public interface ResponseCallBack<T> {
     void onStart();
 
     void onSuccess(T t);
-
     void onFailure(String error);
-
+    void onCache(T t);
     void onFinish();
 }
