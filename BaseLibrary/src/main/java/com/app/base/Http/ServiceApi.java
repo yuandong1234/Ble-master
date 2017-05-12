@@ -50,7 +50,7 @@ public interface ServiceApi {
      * @return
      */
     @GET("{filePath}")
-    Call<ResponseBody> get(@Path("filePath") String filePath);
+    Call<ResponseBody> get(@HeaderMap Map<String, String> header,@Path("filePath") String filePath);
 
     /**
      * Get 请求

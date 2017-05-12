@@ -1,6 +1,5 @@
 package com.app.base.http;
 
-import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 
@@ -148,9 +147,11 @@ public class HttpUtil {
         checkParams(params);
         Call<ResponseBody> call = null;
 
-        if (mMethod == 0) {//post请求
+        if (mMethod == 0) {
+            //post请求
             call = mServiceApi.post(header, mUrl, params);
-        } else {//get请求
+        } else {
+            //get请求
             call = mServiceApi.get(header, mUrl, params);
         }
         //noinspection unchecked
