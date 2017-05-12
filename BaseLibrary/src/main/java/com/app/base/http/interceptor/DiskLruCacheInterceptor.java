@@ -74,12 +74,12 @@ public class DiskLruCacheInterceptor implements Interceptor {
         String key=sb.toString();
         String value = buffer.clone().readString(charset);
         //TODO  对返回数据进行判断，只存取正确的数据（尚未处理未做）
-        Log.wtf(TAG, "---> start to save the response data into disk <---");
+        Log.wtf(TAG, "---> START TO SAVE THE RESPONSE DATA INTO  DISK <---");
         Log.wtf(TAG, "---> key  :"+key);
         Log.wtf(TAG, "---> value  :"+value);
         //把数据存入到硬盘中
         CacheManager.getInstance().putCache(key, value);
-        Log.wtf(TAG, "---> success to save the response data into disk <---");
+        Log.wtf(TAG, "---> COMPLETE TO THE RESPONSE DATA INTO  DISK <---");
         return response;
     }
 }

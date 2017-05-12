@@ -86,11 +86,13 @@ public class RetrofitFragment extends BaseFragment {
 //        });
 
         HttpUtil.Builder builder = new HttpUtil.Builder(_mActivity)
+               // .method(HttpUtil.POST)
+                .method(HttpUtil.GET)
                 .url("index")
                 .params(params)
                 .model(NewsListEntity.class);
         HttpUtil httpUtil = builder.build();
-        httpUtil.post(new ResponseCallBack<NewsListEntity>() {
+        httpUtil.call(new ResponseCallBack<NewsListEntity>() {
             @Override
             public void onNetworkError() {
                 Toast.makeText(_mActivity,"network unavailable",Toast.LENGTH_SHORT).show();
