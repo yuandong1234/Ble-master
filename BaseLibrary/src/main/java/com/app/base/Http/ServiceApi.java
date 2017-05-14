@@ -2,6 +2,7 @@ package com.app.base.http;
 
 import java.util.Map;
 
+import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -10,7 +11,10 @@ import retrofit2.http.FieldMap;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.HeaderMap;
+import retrofit2.http.Multipart;
 import retrofit2.http.POST;
+import retrofit2.http.Part;
+import retrofit2.http.PartMap;
 import retrofit2.http.Path;
 import retrofit2.http.QueryMap;
 
@@ -41,7 +45,19 @@ public interface ServiceApi {
      * @return
      */
     @POST("{filePath}")
-    Call<ResponseBody> post(@Path("filePath") String filePath, @Body RequestBody jsonBody);
+    Call<ResponseBody> post(@HeaderMap Map<String, String> header, @Path("filePath") String filePath, @Body RequestBody jsonBody);
+
+    /**
+     * Post 上传文件
+     *
+     * @param filePath
+     * @param params
+     * @param images
+     * @return
+     */
+    @Multipart
+    @POST("{filePath}")
+    Call<ResponseBody> post(@HeaderMap Map<String, String> header,@Path("filePath") String filePath, @FieldMap Map<String, String> params, @PartMap Map<String, RequestBody> images);
 
     /**
      * get请求
@@ -50,15 +66,16 @@ public interface ServiceApi {
      * @return
      */
     @GET("{filePath}")
-    Call<ResponseBody> get(@HeaderMap Map<String, String> header,@Path("filePath") String filePath);
+    Call<ResponseBody> get(@HeaderMap Map<String, String> header, @Path("filePath") String filePath);
 
     /**
      * Get 请求
+     *
      * @param filePath 接口
-     * @param params  请求参数
+     * @param params   请求参数
      * @return
      */
     @GET("{filePath}")
-    Call<ResponseBody> get(@HeaderMap Map<String, String> header,@Path("filePath") String filePath , @QueryMap Map<String, String> params);
+    Call<ResponseBody> get(@HeaderMap Map<String, String> header, @Path("filePath") String filePath, @QueryMap Map<String, String> params);
 
 }

@@ -2,16 +2,21 @@ package com.app.base.http;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.app.base.http.callback.HttpCallBack;
 import com.app.base.http.callback.ResponseCallBack;
 import com.app.base.http.config.RetrofitClient;
 import com.app.base.util.NetworkUtil;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
+import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -25,6 +30,7 @@ import static com.app.base.http.constant.AppConstant.BASE_URL;
  */
 
 public class HttpUtil {
+    private static String TAG = HttpUtil.class.getSimpleName();
     //request method
     public final static int POST = 0;
     public final static int GET = 1;
@@ -36,15 +42,20 @@ public class HttpUtil {
     private String mUrl;//访问接口
     private Class mModel;//返回数据类型
     private int mMethod;//请求方法类型
+    private String mJson;//json格式参数
+    private ArrayList<String>mImageUrls;//上传图片路径
+    private int i;
 
     private HttpUtil(ServiceApi serviceApi, String url, Map<String, String> headerParams,
-                     Map<String, String> requestBodyParams, Class clazz, int method) {
+                     Map<String, String> requestBodyParams, Class clazz, int method, String json,ArrayList<String> urls) {
         this.mServiceApi = serviceApi;
         this.mUrl = url;
         this.headerParams = headerParams;
         this.requestBodyParams = requestBodyParams;
         this.mModel = clazz;
         this.mMethod = method;
+        this.mJson = json;
+        this.mImageUrls=urls;
     }
 
     public static class Builder {
@@ -55,6 +66,8 @@ public class HttpUtil {
         private Map<String, String> params;//参数
         private Class model;//响应返回类型Model
         private int method;//请求方法（post/get）
+        private String json;//参数以json的格式传递
+        private ArrayList<String> imageUrls;
 
         public Builder(Context context) {
             try {
@@ -89,14 +102,24 @@ public class HttpUtil {
             this.url = url;
             return this;
         }
-
+        //返回实体类型
         public Builder model(Class model) {
             this.model = model;
             return this;
         }
-
+        //请求方法类型
         public Builder method(int method) {
             this.method = method;
+            return this;
+        }
+        //请求内容json格式
+        public Builder json(String json) {
+            this.json = json;
+            return this;
+        }
+        //图片路径
+        public Builder imageUrls(ArrayList<String> urls){
+            this.imageUrls=urls;
             return this;
         }
 
@@ -114,7 +137,7 @@ public class HttpUtil {
                     .client(mClient)
                     .build();
             ServiceApi serviceApi = retrofit.create(ServiceApi.class);
-            httpUtil = new HttpUtil(serviceApi, url, header, params, model, method);
+            httpUtil = new HttpUtil(serviceApi, url, header, params, model, method, json,imageUrls);
             return httpUtil;
         }
 
@@ -149,13 +172,56 @@ public class HttpUtil {
 
         if (mMethod == 0) {
             //post请求
-            call = mServiceApi.post(header, mUrl, params);
+            if (!TextUtils.isEmpty(mJson)) {
+                //请求体参数为 json 格式
+                call = mServiceApi.post(header, mUrl, jsonToRequestBody(mJson));
+            } else if(mImageUrls!=null&&mImageUrls.size()>0){
+                //上传文件
+                call = mServiceApi.post(header, mUrl, params,fileToRequestBody(mImageUrls));
+            } else {
+                //请求体参数为  map(key ---value)
+                call = mServiceApi.post(header, mUrl, params);
+            }
         } else {
             //get请求
             call = mServiceApi.get(header, mUrl, params);
         }
         //noinspection unchecked
         call.enqueue(new HttpCallBack(callBack, mModel));
+    }
+
+    /**
+     * json数据转化为RequestBody
+     * 请求参数：json
+     *
+     * @param json
+     */
+    private RequestBody jsonToRequestBody(String json) {
+        RequestBody requestBody = null;
+        if (!TextUtils.isEmpty(json)) {
+            requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json);
+        } else {
+            Log.wtf(TAG, "json is null");
+        }
+        return requestBody;
+    }
+
+    /**
+     * 用RequestBody包裹File
+     * @param urls
+     * @return
+     */
+    private Map<String, RequestBody> fileToRequestBody(ArrayList<String> urls){
+        Map<String, RequestBody> map = new HashMap<>();
+        for (String path:urls){
+            File file = new File(path);
+            //"file\"; filename=\""+file.getName()+"\""
+            RequestBody requestBody = RequestBody.create(MediaType.parse("image/*"), file);
+            //注意这里"（image+i）" 如果服务器有配置参数名，直接替换（image+i）
+            map.put("image"+i+"\""+"; filename=\"\"",requestBody);
+            i++;
+        }
+        return map;
     }
 
     /**
