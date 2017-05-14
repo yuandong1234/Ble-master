@@ -12,6 +12,7 @@ import retrofit2.http.GET;
 import retrofit2.http.HeaderMap;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
+import retrofit2.http.QueryMap;
 
 /**
  * 访问Api接口(get 、post请求)
@@ -49,6 +50,15 @@ public interface ServiceApi {
      * @return
      */
     @GET("{filePath}")
-    Call<ResponseBody> get(@Path("filePath") String filePath);
+    Call<ResponseBody> get(@HeaderMap Map<String, String> header,@Path("filePath") String filePath);
+
+    /**
+     * Get 请求
+     * @param filePath 接口
+     * @param params  请求参数
+     * @return
+     */
+    @GET("{filePath}")
+    Call<ResponseBody> get(@HeaderMap Map<String, String> header,@Path("filePath") String filePath , @QueryMap Map<String, String> params);
 
 }

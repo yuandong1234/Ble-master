@@ -1,6 +1,5 @@
 package com.app.base.http;
 
-import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 
@@ -26,20 +25,26 @@ import static com.app.base.http.constant.AppConstant.BASE_URL;
  */
 
 public class HttpUtil {
+    //request method
+    public final static int POST = 0;
+    public final static int GET = 1;
+
     private static volatile HttpUtil httpUtil;
     private static volatile ServiceApi mServiceApi;
     private Map<String, String> headerParams;//自定义请求头
     private Map<String, String> requestBodyParams;//请求体
     private String mUrl;//访问接口
     private Class mModel;//返回数据类型
+    private int mMethod;//请求方法类型
 
     private HttpUtil(ServiceApi serviceApi, String url, Map<String, String> headerParams,
-                     Map<String, String> requestBodyParams, Class clazz) {
+                     Map<String, String> requestBodyParams, Class clazz, int method) {
         this.mServiceApi = serviceApi;
         this.mUrl = url;
         this.headerParams = headerParams;
         this.requestBodyParams = requestBodyParams;
         this.mModel = clazz;
+        this.mMethod = method;
     }
 
     public static class Builder {
@@ -48,7 +53,8 @@ public class HttpUtil {
         private String url;//访问接口
         private Map<String, String> header;//消息头
         private Map<String, String> params;//参数
-        private Class model;
+        private Class model;//响应返回类型Model
+        private int method;//请求方法（post/get）
 
         public Builder(Context context) {
             try {
@@ -89,6 +95,11 @@ public class HttpUtil {
             return this;
         }
 
+        public Builder method(int method) {
+            this.method = method;
+            return this;
+        }
+
         public HttpUtil build() {
             if (TextUtils.isEmpty(this.url)) {
                 throw new NullPointerException("request can not be null");
@@ -103,19 +114,15 @@ public class HttpUtil {
                     .client(mClient)
                     .build();
             ServiceApi serviceApi = retrofit.create(ServiceApi.class);
-            httpUtil = new HttpUtil(serviceApi, url, header, params, model);
+            httpUtil = new HttpUtil(serviceApi, url, header, params, model, method);
             return httpUtil;
         }
 
     }
 
-    //get请求
-    public void get() {
+    //网络请求
+    public <T> void call(ResponseCallBack<T> callBack) {
 
-    }
-
-    //post请求
-    public <T> void post(ResponseCallBack<T> callBack) {
         if (!NetworkUtil.isNetworkAvailable()) {
             //网络异常，比如Toast弹框提示
             if (callBack != null) {
@@ -138,11 +145,18 @@ public class HttpUtil {
             params.putAll(requestBodyParams);
         }
         checkParams(params);
-        Call<ResponseBody> call = mServiceApi.post(header, mUrl, params);
+        Call<ResponseBody> call = null;
+
+        if (mMethod == 0) {
+            //post请求
+            call = mServiceApi.post(header, mUrl, params);
+        } else {
+            //get请求
+            call = mServiceApi.get(header, mUrl, params);
+        }
         //noinspection unchecked
         call.enqueue(new HttpCallBack(callBack, mModel));
     }
-
 
     /**
      * 添加公共header头部参数
@@ -152,7 +166,7 @@ public class HttpUtil {
     private Map<String, String> addCommonHeader() {
         Map<String, String> commonHeader = new HashMap<>();
         //自定义添加一些头部信息
-        commonHeader.put("Cache-Time", 60*60*24+"");
+        commonHeader.put("Cache-Time", 60 * 60 * 24 + "");
         return commonHeader;
     }
 

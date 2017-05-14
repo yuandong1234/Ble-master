@@ -9,14 +9,11 @@ import android.widget.Toast;
 import com.app.base.fragment.BaseFragment;
 import com.app.base.http.HttpUtil;
 import com.app.base.http.callback.ResponseCallBack;
-import com.app.base.http.entity.BaseEntity;
 import com.app.base.util.LogUtils;
 import com.yuandong.ble.R;
 import com.yuandong.ble.adapter.NewsAdapter;
-import com.yuandong.ble.retrofit.entity.BaseResponse;
 import com.yuandong.ble.retrofit.entity.News;
 import com.yuandong.ble.retrofit.entity.NewsListEntity;
-import com.yuandong.ble.retrofit.entity.ResponseResult;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -86,11 +83,13 @@ public class RetrofitFragment extends BaseFragment {
 //        });
 
         HttpUtil.Builder builder = new HttpUtil.Builder(_mActivity)
+               // .method(HttpUtil.POST)
+                .method(HttpUtil.GET)
                 .url("index")
                 .params(params)
                 .model(NewsListEntity.class);
         HttpUtil httpUtil = builder.build();
-        httpUtil.post(new ResponseCallBack<NewsListEntity>() {
+        httpUtil.call(new ResponseCallBack<NewsListEntity>() {
             @Override
             public void onNetworkError() {
                 Toast.makeText(_mActivity,"network unavailable",Toast.LENGTH_SHORT).show();
