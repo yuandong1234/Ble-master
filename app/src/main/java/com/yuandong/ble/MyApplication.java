@@ -11,10 +11,11 @@ import com.app.base.util.Utils;
 
 public class MyApplication extends Application {
     public  static  MyApplication instance;
-
+    public static Context context;
     @Override
     public void onCreate() {
         super.onCreate();
+        context=getApplicationContext();
         instance=this;
         Utils.init(this);
 

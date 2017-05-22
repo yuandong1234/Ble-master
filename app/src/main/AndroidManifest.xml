@@ -6,10 +6,7 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.READ_PROFILE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
-    <uses-permission android:name="android.permission.INTERNET"/>
-
-
-
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".MyApplication"
@@ -21,13 +18,13 @@
         <activity android:name=".bluetooth.BleActivity" />
         <activity android:name=".bluetooth.DeviceDetailActivity" />
         <activity android:name=".bluetooth.OperateActivity" />
-        <activity android:name=".statusbar.StatusBarActivity"></activity>
+        <activity android:name=".statusbar.StatusBarActivity" />
         <activity android:name=".statusbar.StatusBarColorActivity" />
         <activity android:name=".statusbar.TransparentActivity" />
         <activity android:name=".statusbar.ImageViewTransparentActivity" />
         <activity android:name=".statusbar.FragmentStatusBarActivity" />
         <activity android:name=".statusbar.SwipeBackAtivity" />
-        <activity android:name=".mvp.MvpTestActivity"></activity>
+        <activity android:name=".mvp.MvpTestActivity" />
         <activity android:name=".mvp.MvpTest2Activity" />
         <activity android:name=".MainActivity">
             <intent-filter>
@@ -36,6 +33,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".retrofit.UplaodFileActivity"></activity>
+        <!-- Ucrop -->
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
     </application>
 
 </manifest>
