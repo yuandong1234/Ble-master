@@ -81,7 +81,11 @@ public final class CacheManager {
         OutputStream os = null;
         try {
             DiskLruCache.Editor editor = mDiskLruCache.edit(encryptMD5(key));
-            os = editor.newOutputStream(DISK_CACHE_INDEX);
+            if(editor!=null){
+                os = editor.newOutputStream(DISK_CACHE_INDEX);
+            }else{
+                return;
+            }
             os.write(value.getBytes());
             os.flush();
             editor.commit();

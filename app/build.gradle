@@ -19,7 +19,12 @@ android {
     }
 
 }
-
+allprojects {
+    repositories {
+        jcenter()
+        maven { url "https://jitpack.io" }
+    }
+}
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:25.1.0'
@@ -39,4 +44,6 @@ dependencies {
     compile 'com.orhanobut:logger:1.15'
     //glide
     compile 'com.github.bumptech.glide:glide:3.7.0'
+    //Ucrop
+    compile 'com.github.yalantis:ucrop:2.2.1-native'
 }

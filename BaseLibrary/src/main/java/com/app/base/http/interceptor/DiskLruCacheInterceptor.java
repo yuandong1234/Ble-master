@@ -78,7 +78,7 @@ public class DiskLruCacheInterceptor implements Interceptor {
         Log.wtf(TAG, "---> key  :"+key);
         Log.wtf(TAG, "---> value  :"+value);
         //把数据存入到硬盘中
-        CacheManager.getInstance().putCache(key, value);
+        CacheManager.getInstance().setCache(key, value);
         Log.wtf(TAG, "---> COMPLETE TO THE RESPONSE DATA INTO  DISK <---");
         return response;
     }
