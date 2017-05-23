@@ -14,12 +14,18 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.app.base.activity.BaseActivity;
 import com.yalantis.ucrop.UCrop;
 import com.yuandong.ble.R;
+import com.yuandong.ble.retrofit.entity.UploadFileResponse;
 import com.yuandong.ble.util.PhotoUtil;
 import com.yuandong.ble.widget.BottomDialog;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class UplaodFileActivity extends BaseActivity {
 
@@ -27,6 +33,7 @@ public class UplaodFileActivity extends BaseActivity {
     private static final int REQUEST_STORAGE_READ_ACCESS_PERMISSION = 101;
     private BottomDialog dialog;
     private Uri originalUri;
+    private Uri cropUri;
 
     private ImageView imageView;
     private Button button;
@@ -125,9 +132,10 @@ public class UplaodFileActivity extends BaseActivity {
                     break;
                 case UCrop.REQUEST_CROP:
                     if (data != null) {
-                        Uri resultUri = UCrop.getOutput(data);
-                        Log.e(TAG, "图片剪切成功 : " + resultUri.getPath());
-                        disPlayImage(resultUri);
+                        cropUri = UCrop.getOutput(data);
+                        Log.e(TAG, "图片剪切成功 : " + cropUri.getPath());
+                        //disPlayImage(resultUri);
+                        upload(cropUri.getPath());
                     }
                     break;
                 case UCrop.RESULT_ERROR:
@@ -136,9 +144,10 @@ public class UplaodFileActivity extends BaseActivity {
                     break;
                 case PhotoUtil.CROP_REQUEST_CODE:
                     if (data != null) {
-                        Uri resultUri = data.getData();
-                        Log.e(TAG, "系统图片剪切成功 :" + resultUri.getPath());
-                        disPlayImage(resultUri);
+                        cropUri = data.getData();
+                        Log.e(TAG, "系统图片剪切成功 :" + cropUri.getPath());
+                        //disPlayImage(resultUri);
+                        upload(cropUri.getPath());
                     }
                     break;
             }
@@ -162,6 +171,33 @@ public class UplaodFileActivity extends BaseActivity {
     private void disPlayImage(Uri uri) {
         Bitmap bitmap = BitmapFactory.decodeFile(uri.getPath());
         imageView.setImageBitmap(bitmap);
+    }
+
+    private void upload(String path) {
+
+        Map<String,String> params=new HashMap<>();
+        params.put("sign","55345ddecaf2c8cb84f6719217c58698");
+        params.put("appid","346b81a32e7007eccadf60252bb599f0");
+        params.put("timeStamp",(System.currentTimeMillis()/10000)+"");
+        String requestBody="{\"fileType\":\"jpg\",\"module\":0}";
+        params.put("requestBody",requestBody);
+        ArrayList<String> paths=new ArrayList<>();
+        paths.add(path);
+        String url="fileStreamUpload.shtml";
+        RetrofitUtil.postFile(url, params, paths, new RequestCallback() {
+            @Override
+            public void onSuccess(Object object) {
+                UploadFileResponse response=(UploadFileResponse)object;
+                Toast.makeText(UplaodFileActivity.this,response.message,Toast.LENGTH_SHORT).show();
+                disPlayImage(cropUri);
+            }
+
+            @Override
+            public void onFailure(String error) {
+                Toast.makeText(UplaodFileActivity.this,error,Toast.LENGTH_SHORT).show();
+            }
+        });
+
     }
 
 }

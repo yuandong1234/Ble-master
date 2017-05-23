@@ -1,6 +1,7 @@
 package com.yuandong.ble.retrofit;
 
 import com.yuandong.ble.retrofit.entity.BaseResponse;
+import com.yuandong.ble.retrofit.entity.UploadFileResponse;
 
 import java.util.Map;
 
@@ -14,6 +15,7 @@ import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.PartMap;
 import retrofit2.http.Path;
+import retrofit2.http.QueryMap;
 
 /**
  * Created by yuandong on 2017/4/20.
@@ -35,7 +37,7 @@ public interface ApiService {
      */
     @Multipart
     @POST("{filePath}")
-    Call<ResponseBody> postFile(@Path("filePath") String filePath, @FieldMap Map<String, String> params,
-                            @PartMap Map<String, RequestBody> images);
+    Call<UploadFileResponse> postFile(@Path("filePath") String filePath, @QueryMap Map<String, String> params,
+                                      @PartMap Map<String, RequestBody> images);
 
 }

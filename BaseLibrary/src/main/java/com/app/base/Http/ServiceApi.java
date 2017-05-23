@@ -57,7 +57,7 @@ public interface ServiceApi {
      */
     @Multipart
     @POST("{filePath}")
-    Call<ResponseBody> post(@HeaderMap Map<String, String> header,@Path("filePath") String filePath, @FieldMap Map<String, String> params, @PartMap Map<String, RequestBody> images);
+    Call<ResponseBody> post(@HeaderMap Map<String, String> header,@Path("filePath") String filePath, @QueryMap  Map<String, String> params, @PartMap Map<String, RequestBody> images);
 
     /**
      * get请求
